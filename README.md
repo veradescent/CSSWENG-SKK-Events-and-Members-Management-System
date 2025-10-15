@@ -11,15 +11,14 @@ MONGODB_URI= <mongodb connection string>
 ```
 
 ### Project Layout
-project/
-├── views/
-│   ├── layouts/
-│   │   └── main.hbs
-│   ├── index.hbs
-│   └── member-database.hbs
-├── public/
-│   └── styles.css
-├── models/
-│   └── Member.js
-├── app.js
-└── .env
+views/
+- layouts/
+  - main.hbs
+- index.hbs
+- member-database.hbs
+public/
+- styles.css
+models/
+- Member.js
+app.js
+.env
