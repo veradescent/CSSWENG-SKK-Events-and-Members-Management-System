@@ -10,15 +10,3 @@ PORT= <port number>
 MONGODB_URI= <mongodb connection string>
 ```
 
-### Project Layout
-1. views/
-  - layouts/
-    - main.hbs
-  - index.hbs
-  - member-database.hbs
-2. public/
-  - styles.css
-3. models/
-  - Member.js
-4. app.js
-5. .env
