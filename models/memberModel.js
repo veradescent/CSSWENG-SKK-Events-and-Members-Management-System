@@ -5,7 +5,7 @@ const memberSchema = new mongoose.Schema({
   areaChurch: {type: String, required: true, trim: true},
   age: {type: Number,min: 0},
 
-  sim: {type: String, enum: ['Kids', 'Youth', 'Young Adults', 'Adults', 'Seniors'], //restrict to known SIMs (optional) 
+  sim: {type: String, enum: ['Kids', 'Youth', 'YoAds', 'WOW', 'DIG'], //restrict to known SIMs (optional) 
     required: true},
 
   emailAddress: {type: String, trim: true, lowercase: true, match: [/^\S+@\S+\.\S+$/, 'Invalid email address'],}, // xxx@xxx.xxx
