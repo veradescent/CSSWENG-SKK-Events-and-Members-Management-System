@@ -3,22 +3,23 @@ const express = require('express'); //express
 const handlebars = require('express-handlebars');
 const mongoose = require("mongoose");
 
-const server = express();
+const app = express();
 
 // Middleware
-server.use(express.urlencoded({ extended: true }));
-server.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-server.use(express.static('public')); // Static Files
+app.use(express.static('public')); // Static Files
 
 // Handlebars
-server.engine('hbs', handlebars.engine({
+app.engine('hbs', handlebars.engine({
     extname: 'hbs',
     helpers: {
         eq: (a, b) => {return a === b;}
     }
 }));
-server.set('view engine', 'hbs');
+app.set('view engine', 'hbs');
+app.set('views', './src/views/')
 
 // Connect to MongoDB
 mongoose.set('strictQuery', true);
@@ -27,14 +28,14 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // Routes
-server.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.render("index");
 });
 
-server.get("/member-database", (req, res) => {
+app.get("/member-database", (req, res) => {
   res.render("member-database");
 });
 
-// Start server
+// Start app
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
