@@ -1,0 +1,13 @@
+#NodeJS
+node_modules/
+
+#Environment Variables
+.env
+
+# === System Files ===
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+logs/
+*.log
