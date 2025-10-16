@@ -17,17 +17,17 @@
         </div>
 
         <table class="table table-bordered" style="border: 2px solid #6c757d; border-radius: 15px; overflow: hidden;">
-            <thead style="background-color: #adb5bd;">
+            <thead style="background-color: #adb5bd !important;">
                 <tr>
-                    <th scope="col" style="border: 5px solid #bfbfc4;">Name</th>
-                    <th scope="col" style="border: 5px solid #bfbfc4;">Area</th>
-                    <th scope="col" style="border: 5px solid #bfbfc4;">SIM</th>
-                    <th scope="col" style="border: 5px solid #bfbfc4;">Contact Number</th>
-                    <th scope="col" style="border: 5px solid #bfbfc4;">Email Address</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Name</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Area</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">SIM</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Contact Number</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Email Address</th>
                 </tr>
             </thead>
             <tbody style="background-color: #e9ecef;">
-                <!-- Data rows -->
+
                 <tr>
                     <td style="border: 5px solid #bfbfc4;"></td>
                     <td style="border: 5px solid #bfbfc4;"></td>
@@ -37,13 +37,144 @@
                 </tr>
             </tbody>
         </table>
-        
+
         <div class="mt-3">
-            <button class="btn btn-success me-2">Add</button>
-            <button class="btn btn-warning me-2">Edit</button>
-            <button class="btn btn-danger">Remove</button>
+            <button class="btn btn-success me-2" id="addBtn">Add</button>
+            <button class="btn btn-warning me-2" id="editBtn">Edit</button>
+            <button class="btn btn-danger" id="removeBtn">Remove</button>
         </div>
     </div>
-
-    
 </div>
+
+<div class="custom-popup" id="popupForm" style="display: none;">
+    <div class="popup-content">
+        <h4 id="popupTitle">Add Member</h4>
+        <form id="memberForm">
+            <input type="text" id="name" class="form-control mb-2" placeholder="Name" required>
+            <input type="text" id="area" class="form-control mb-2" placeholder="Area" required>
+            <input type="text" id="sim" class="form-control mb-2" placeholder="SIM" required>
+            <input type="text" id="contact" class="form-control mb-2" placeholder="Contact Number" required>
+            <input type="email" id="email" class="form-control mb-2" placeholder="Email Address" required>
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.custom-popup {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+.popup-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    width: 400px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.popup-content h4 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tableBody = document.querySelector("table tbody");
+    const addBtn = document.getElementById("addBtn");
+    const editBtn = document.getElementById("editBtn");
+    const removeBtn = document.getElementById("removeBtn");
+    const popup = document.getElementById("popupForm");
+    const form = document.getElementById("memberForm");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const popupTitle = document.getElementById("popupTitle");
+
+    let selectedRow = null;
+    let isEditing = false;
+
+    tableBody.addEventListener("click", function(e) {
+        const row = e.target.closest("tr");
+        if (!row) return;
+        if (selectedRow) selectedRow.classList.remove("table-active");
+        selectedRow = row;
+        selectedRow.classList.add("table-active");
+    });
+
+    addBtn.addEventListener("click", function() {
+        isEditing = false;
+        form.reset();
+        popupTitle.textContent = "Add Member";
+        popup.style.display = "flex";
+    });
+
+    editBtn.addEventListener("click", function() {
+        if (!selectedRow) {
+            alert("Please select a row to edit.");
+            return;
+        }
+        isEditing = true;
+        popupTitle.textContent = "Edit Member";
+        document.getElementById("name").value = selectedRow.cells[0].textContent;
+        document.getElementById("area").value = selectedRow.cells[1].textContent;
+        document.getElementById("sim").value = selectedRow.cells[2].textContent;
+        document.getElementById("contact").value = selectedRow.cells[3].textContent;
+        document.getElementById("email").value = selectedRow.cells[4].textContent;
+        popup.style.display = "flex";
+    });
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const name = document.getElementById("name").value.trim();
+        const area = document.getElementById("area").value.trim();
+        const sim = document.getElementById("sim").value.trim();
+        const contact = document.getElementById("contact").value.trim();
+        const email = document.getElementById("email").value.trim();
+
+        if (isEditing && selectedRow) {
+            selectedRow.cells[0].textContent = name;
+            selectedRow.cells[1].textContent = area;
+            selectedRow.cells[2].textContent = sim;
+            selectedRow.cells[3].textContent = contact;
+            selectedRow.cells[4].textContent = email;
+        } else {
+            const newRow = tableBody.insertRow();
+            const borderStyle = "border: 5px solid #bfbfc4;";
+            const bgStyle = "background-color: #e9ecef;";
+            newRow.insertCell(0).setAttribute("style", borderStyle + bgStyle);
+            newRow.insertCell(1).setAttribute("style", borderStyle + bgStyle);
+            newRow.insertCell(2).setAttribute("style", borderStyle + bgStyle);
+            newRow.insertCell(3).setAttribute("style", borderStyle + bgStyle);
+            newRow.insertCell(4).setAttribute("style", borderStyle + bgStyle);
+
+            newRow.cells[0].textContent = name;
+            newRow.cells[1].textContent = area;
+            newRow.cells[2].textContent = sim;
+            newRow.cells[3].textContent = contact;
+            newRow.cells[4].textContent = email;
+        }
+        popup.style.display = "none";
+    });
+
+    removeBtn.addEventListener("click", function() {
+        if (!selectedRow) {
+            alert("Please select a row to remove.");
+            return;
+        }
+        if (confirm("Are you sure you want to remove this member?")) {
+            selectedRow.remove();
+            selectedRow = null;
+        }
+    });
+
+    cancelBtn.addEventListener("click", function() {
+        popup.style.display = "none";
+    });
+});
+</script>
