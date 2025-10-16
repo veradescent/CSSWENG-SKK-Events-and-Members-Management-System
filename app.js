@@ -14,6 +14,9 @@ app.use(express.static('public')); // Static Files
 // Handlebars
 app.engine('hbs', handlebars.engine({
     extname: 'hbs',
+    defaultLayout: 'main',
+    layoutsDir: './src/views/layouts',
+    partialsDir: './src/views/partials',
     helpers: {
         eq: (a, b) => {return a === b;}
     }
@@ -29,11 +32,11 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 app.get("/", (req, res) => {
-  res.render("index");
+  res.render("adminHomePage");
 });
 
 app.get("/member-database", (req, res) => {
-  res.render("member-database");
+  res.render("memberDatabase");
 });
 
 // Start app

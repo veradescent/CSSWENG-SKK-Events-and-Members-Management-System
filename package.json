@@ -1,22 +1,23 @@
 {
   "name": "cssweng-skk-events-and-members-management-system",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+  "description": "npm init npm install express mongoose dotenv hbs",
+  "homepage": "https://github.com/veradescent/CSSWENG-SKK-Events-and-Members-Management-System#readme",
+  "bugs": {
+    "url": "https://github.com/veradescent/CSSWENG-SKK-Events-and-Members-Management-System/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/veradescent/CSSWENG-SKK-Events-and-Members-Management-System.git"
   },
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/veradescent/CSSWENG-SKK-Events-and-Members-Management-System/issues"
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
-  "homepage": "https://github.com/veradescent/CSSWENG-SKK-Events-and-Members-Management-System#readme",
   "dependencies": {
     "body-parser": "^2.2.0",
     "dotenv": "^17.2.3",
