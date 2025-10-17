@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const popupTitle = document.getElementById("popupTitle");
 
     let selectedRow = null;
+    let selectedId = null;
     let isEditing = false;
 
     tableBody.addEventListener("click", function(e) {
@@ -16,16 +17,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!row) return;
         if (selectedRow) selectedRow.classList.remove("table-active");
         selectedRow = row;
+        selectedId = row.getAttribute("data-id"); //Mongo ID
+
         selectedRow.classList.add("table-active");
-
-        uInput['username'] = document.getElementById("name").value;
-        uInput['area'] = document.getElementById("area").value;
-        uInput['sim'] = document.getElementById("sim").value;
-        uInput['contact'] = document.getElementById("contact").value;
-        uInput['email'] = document.getElementById("email").value;
-
-        var jsonInput = JSON.stringify(uInput)
-
 
     });
 
@@ -84,14 +78,23 @@ document.addEventListener("DOMContentLoaded", function() {
         popup.style.display = "none";
     });
 
-    removeBtn.addEventListener("click", function() {
-        if (!selectedRow) {
-            alert("Please select a row to remove.");
+    removeBtn.addEventListener("click", async function() {
+        if (!selectedRow || !selectedId) {
+            alert("Please select a member to remove.");
             return;
         }
         if (confirm("Are you sure you want to remove this member?")) {
-            selectedRow.remove();
-            selectedRow = null;
+            // Delete from server (DB)
+            const res = await fetch(`/member-database/${selectedId}`, { method: "DELETE" });
+
+            if (res.ok) {
+                // Remove from table (frontend)
+                selectedRow.remove();
+                selectedRow = null;
+                selectedId = null;
+            } else {
+                alert("Failed to delete member.");
+            }
         }
     });
 
