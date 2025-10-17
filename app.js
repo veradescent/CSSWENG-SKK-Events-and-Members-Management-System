@@ -35,14 +35,16 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Routes
+//route for index
+
+// route for homepage 
 app.get("/", (req, res) => {
-  res.render("adminHomePage");
+  res.render("adminHomePage"); //make some stuff not visible or not part, if not admin (edit, post buttons)
 });
 
-app.get("/member-database", (req, res) => {
-  res.render("memberDatabase");
-});
+//member-database route
+import memDBRouter from './src/routes/memberDatabase.js';
+app.use('/', memDBRouter);
 
 // Start app
 const PORT = process.env.PORT || 3000;
