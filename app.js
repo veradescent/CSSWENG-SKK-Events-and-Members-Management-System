@@ -1,15 +1,20 @@
-require('dotenv').config(); //environment variables
-const express = require('express'); //express
-const handlebars = require('express-handlebars');
-const mongoose = require("mongoose");
+import "dotenv/config.js"; //environment variables
+import express from 'express'; //express
+import handlebars from 'express-handlebars';
+import mongoose from "mongoose";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 
 // Middleware
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(express.static('public')); // Static Files
+app.use(express.static(__dirname + '/public')); // Static Files
+// app.use(express.static(path.join(__dirname, 'public')));
 
 // Handlebars
 app.engine('hbs', handlebars.engine({
