@@ -30,7 +30,7 @@
             </thead>
             <tbody style="background-color: #e9ecef;">
                 {{#each members}}
-                    <tr>
+                    <tr data-id="{{this._id}}">
                         <td style="border: 5px solid #bfbfc4;">{{fullName}}</td>
                         <td style="border: 5px solid #bfbfc4;">{{areaChurch}}</td>
                         <td style="border: 5px solid #bfbfc4;">{{sim}}</td>
