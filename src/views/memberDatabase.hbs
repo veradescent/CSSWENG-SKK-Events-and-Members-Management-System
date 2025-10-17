@@ -29,14 +29,15 @@
                 </tr>
             </thead>
             <tbody style="background-color: #e9ecef;">
-
-                <tr>
-                    <td style="border: 5px solid #bfbfc4;"></td>
-                    <td style="border: 5px solid #bfbfc4;"></td>
-                    <td style="border: 5px solid #bfbfc4;"></td>
-                    <td style="border: 5px solid #bfbfc4;"></td>
-                    <td style="border: 5px solid #bfbfc4;"></td>
-                </tr>
+                {{#each members}}
+                    <tr>
+                        <td style="border: 5px solid #bfbfc4;">{{fullName}}</td>
+                        <td style="border: 5px solid #bfbfc4;">{{areaChurch}}</td>
+                        <td style="border: 5px solid #bfbfc4;">{{sim}}</td>
+                        <td style="border: 5px solid #bfbfc4;">{{contactNumber}}</td>
+                        <td style="border: 5px solid #bfbfc4;">{{emailAddress}}</td>
+                    </tr>
+                {{/each}}
             </tbody>
         </table>
 
