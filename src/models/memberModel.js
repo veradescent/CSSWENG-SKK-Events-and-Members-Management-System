@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 const { Schema, model } = mongoose
 
 const memberSchema = new Schema({
-    firstName: {type: String, required: true, trim: true},
-    lastName: {type: String, required: true, trim: true},
+    fullName: {type: String, required: true, trim: true},
     areaChurch: {type: String, required: true, trim: true},
     age: {type: Number,min: 0},
 
