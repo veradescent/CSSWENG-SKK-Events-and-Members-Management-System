@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (selectedRow) selectedRow.classList.remove("table-active");
         selectedRow = row;
         selectedId = row.getAttribute("data-id"); //Mongo ID
-
+        console.log(`selectedId: ${selectedId}`);
         selectedRow.classList.add("table-active");
 
     });
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
         popup.style.display = "flex";
     });
 
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", async function(e) {
         e.preventDefault();
         const name = document.getElementById("name").value.trim();
         const area = document.getElementById("area").value.trim();
@@ -53,13 +53,61 @@ document.addEventListener("DOMContentLoaded", function() {
         const contact = document.getElementById("contact").value.trim();
         const email = document.getElementById("email").value.trim();
 
+        const userInput = {};
+        userInput['name'] = name;
+        userInput['area'] = area;
+        userInput['sim'] = sim;
+        userInput['contact'] = contact;
+        userInput['email'] = email;
+
+        const jsonReq = JSON.stringify(userInput);
+        // console.log(jsonReq);
+
         if (isEditing && selectedRow) {
-            selectedRow.cells[0].textContent = name;
-            selectedRow.cells[1].textContent = area;
-            selectedRow.cells[2].textContent = sim;
-            selectedRow.cells[3].textContent = contact;
-            selectedRow.cells[4].textContent = email;
+            const editInfo = {};
+            editInfo['id'] = selectedId;
+            if (selectedRow.cells[0].textContent != name) {
+                console.log("Name changed");
+                selectedRow.cells[0].textContent = name;
+                editInfo['fullName'] = name;
+            }
+            if (selectedRow.cells[1].textContent != area) {
+                console.log("Area changed");
+                selectedRow.cells[1].textContent = area;
+                editInfo['areaChurch'] = area;
+            }
+            if (selectedRow.cells[2].textContent != sim) {
+                console.log("SIM changed");
+                selectedRow.cells[2].textContent = sim;
+                editInfo['sim'] = sim;
+            }
+            if (selectedRow.cells[3].textContent != contact) {
+                console.log("Contact changed");
+                selectedRow.cells[3].textContent = contact;
+                editInfo['contactNumber'] = contact;
+            }
+            if (selectedRow.cells[4].textContent != email) {
+                console.log("Email changed");
+                selectedRow.cells[4].textContent = email;
+                editInfo['emailAddress'] = email;
+            }
+            const jsonEdit = JSON.stringify(editInfo);
+            const res = await fetch("/editMember", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: jsonEdit,
+            });
         } else {
+            const res = await fetch("/addMember", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: jsonReq,
+            });
+
             const newRow = tableBody.insertRow();
             const borderStyle = "border: 5px solid #bfbfc4;";
             const bgStyle = "background-color: #e9ecef;";

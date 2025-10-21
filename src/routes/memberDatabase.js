@@ -48,4 +48,57 @@ memDBRouter.delete("/member-database/:id", async (req, res) => {
   }
 });
 
+memDBRouter.post('/addMember', async (req, res) => {
+    try {
+        console.log("/addMember req received");
+        
+        const newMember = new Member({
+            fullName: req.body.name,        
+            areaChurch: req.body.area,      
+            sim: req.body.sim,              
+            contactNumber: req.body.contact,
+            emailAddress: req.body.email     
+        });
+        
+        await newMember.save(); 
+        console.log('Member Successfully created');
+        console.log(`${newMember.body.fullname} successfully created`);
+        
+        // Add some validation check afterwards in public/js/memberDatabase.js
+        return res.status(200).json({ 
+            message: 'Member created successfully',
+        });
+        
+    } catch (error) {
+        console.error("Error creating member:", error);
+        return res.status(500).json({ 
+            error: 'Failed to create member',
+            details: error.message 
+        });
+    }
+});
+
+memDBRouter.post('/editMember', async (req, res) => {
+    try {
+        console.log("/editMember req received");
+        const filter = {_id: req.body.id};
+        delete req.body.id;
+        const update = req.body;
+        const mem = await Member.findOneAndUpdate(filter, update);
+        console.log(`Member found: ${mem.fullName}`);
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+memDBRouter.post('/deleteMember', async (req, res) => {
+    try {
+        console.log("/deleteMember req received");
+
+    } catch (error) {
+        console.error(error);
+    }
+
+})
+
 export default memDBRouter;

@@ -7,7 +7,6 @@ import memDBRouter from "./memberDatabase.js"
 const router = Router();
 
 router.get('/', async (req, res) => {
-
   res.render('adminHomePage', {
     title: "Home Page",
     // user: user,
