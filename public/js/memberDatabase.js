@@ -66,31 +66,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (isEditing && selectedRow) {
             const editInfo = {};
             editInfo['id'] = selectedId;
-            if (selectedRow.cells[0].textContent != name) {
-                console.log("Name changed");
-                selectedRow.cells[0].textContent = name;
-                editInfo['fullName'] = name;
-            }
-            if (selectedRow.cells[1].textContent != area) {
-                console.log("Area changed");
-                selectedRow.cells[1].textContent = area;
-                editInfo['areaChurch'] = area;
-            }
-            if (selectedRow.cells[2].textContent != sim) {
-                console.log("SIM changed");
-                selectedRow.cells[2].textContent = sim;
-                editInfo['sim'] = sim;
-            }
-            if (selectedRow.cells[3].textContent != contact) {
-                console.log("Contact changed");
-                selectedRow.cells[3].textContent = contact;
-                editInfo['contactNumber'] = contact;
-            }
-            if (selectedRow.cells[4].textContent != email) {
-                console.log("Email changed");
-                selectedRow.cells[4].textContent = email;
-                editInfo['emailAddress'] = email;
-            }
+            editInfo['fullName'] = name;
+            editInfo['areaChurch'] = area;
+            editInfo['sim'] = sim;
+            editInfo['contactNumber'] = contact;
+            editInfo['emailAddress'] = email;
             const jsonEdit = JSON.stringify(editInfo);
             const res = await fetch("/editMember", {
                 method: "POST",
