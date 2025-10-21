@@ -62,7 +62,7 @@ memDBRouter.post('/addMember', async (req, res) => {
         
         await newMember.save(); 
         console.log('Member Successfully created');
-        console.log(`${newMember.body.fullname} successfully created`);
+        console.log(`${newMember.body.fullName} successfully created`);
         
         // Add some validation check afterwards in public/js/memberDatabase.js
         return res.status(200).json({ 
@@ -78,7 +78,7 @@ memDBRouter.post('/addMember', async (req, res) => {
     }
 });
 
-memDBRouter.post('/editMember', async (req, res) => {
+memDBRouter.put('/editMember', async (req, res) => {
     try {
         console.log("/editMember req received");
         const filter = {_id: req.body.id};
@@ -86,19 +86,16 @@ memDBRouter.post('/editMember', async (req, res) => {
         const update = req.body;
         const mem = await Member.findOneAndUpdate(filter, update);
         console.log(`Member found: ${mem.fullName}`);
+        return res.status(200).json({
+            message: 'DB updated successfully'
+        });
     } catch (error) {
         console.error(error);
+        return res.status(500).json({ 
+            error: 'Failed to update member',
+            details: error.message 
+        });
     }
 });
-
-memDBRouter.post('/deleteMember', async (req, res) => {
-    try {
-        console.log("/deleteMember req received");
-
-    } catch (error) {
-        console.error(error);
-    }
-
-})
 
 export default memDBRouter;

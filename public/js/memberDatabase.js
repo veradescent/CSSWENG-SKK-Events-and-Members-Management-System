@@ -47,38 +47,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
     form.addEventListener("submit", async function(e) {
         e.preventDefault();
-        const name = document.getElementById("name").value.trim();
-        const area = document.getElementById("area").value.trim();
-        const sim = document.getElementById("sim").value.trim();
-        const contact = document.getElementById("contact").value.trim();
-        const email = document.getElementById("email").value.trim();
-
-        const userInput = {};
-        userInput['name'] = name;
-        userInput['area'] = area;
-        userInput['sim'] = sim;
-        userInput['contact'] = contact;
-        userInput['email'] = email;
-
+        const userInput = {
+            fullName: document.getElementById("name").value.trim(),
+            areaChurch: document.getElementById("area").value.trim(),
+            sim: document.getElementById("sim").value.trim(),
+            contactNumber: document.getElementById("contact").value.trim(),
+            emailAddress: document.getElementById("email").value.trim()
+        };
         const jsonReq = JSON.stringify(userInput);
         // console.log(jsonReq);
 
         if (isEditing && selectedRow) {
-            const editInfo = {};
-            editInfo['id'] = selectedId;
-            editInfo['fullName'] = name;
-            editInfo['areaChurch'] = area;
-            editInfo['sim'] = sim;
-            editInfo['contactNumber'] = contact;
-            editInfo['emailAddress'] = email;
-            const jsonEdit = JSON.stringify(editInfo);
+            selectedRow.cells[0].textContent = userInput.fullName;
+            selectedRow.cells[1].textContent = userInput.areaChurch;
+            selectedRow.cells[2].textContent = userInput.sim;
+            selectedRow.cells[3].textContent = userInput.contactNumber;
+            selectedRow.cells[4].textContent = userInput.emailAddress;
             const res = await fetch("/editMember", {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: jsonEdit,
+                body: jsonReq,
             });
+
         } else {
             const res = await fetch("/addMember", {
                 method: "POST",
