@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
             selectedRow.cells[2].textContent = userInput.sim;
             selectedRow.cells[3].textContent = userInput.contactNumber;
             selectedRow.cells[4].textContent = userInput.emailAddress;
-            const res = await fetch("/editMember", {
+            const res = await fetch(`/editMember/${selectedId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

@@ -78,11 +78,10 @@ memDBRouter.post('/addMember', async (req, res) => {
     }
 });
 
-memDBRouter.put('/editMember', async (req, res) => {
+memDBRouter.put('/editMember/:id', async (req, res) => {
     try {
-        console.log("/editMember req received");
-        const filter = {_id: req.body.id};
-        delete req.body.id;
+        console.log(`/editMember req received`);
+        const filter = {_id: req.params.id};
         const update = req.body;
         const mem = await Member.findOneAndUpdate(filter, update);
         console.log(`Member found: ${mem.fullName}`);
