@@ -1,6 +1,10 @@
 # CSSWENG-SKK-Events-and-Members-Management-System
-
-npm init npm install express mongoose dotenv hbs
+```
+npm init
+```
+```
+npm install express mongoose dotenv hbs
+```
 
 ### Instructions for .env file
 1. Create .env file to run locally
