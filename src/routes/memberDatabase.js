@@ -53,16 +53,16 @@ memDBRouter.post('/addMember', async (req, res) => {
         console.log("/addMember req received");
         
         const newMember = new Member({
-            fullName: req.body.name,        
-            areaChurch: req.body.area,      
+            fullName: req.body.fullName,        
+            areaChurch: req.body.areaChurch,      
             sim: req.body.sim,              
-            contactNumber: req.body.contact,
-            emailAddress: req.body.email     
+            contactNumber: req.body.contactNumber,
+            emailAddress: req.body.emailAddress     
         });
         
         await newMember.save(); 
         console.log('Member Successfully created');
-        console.log(`${newMember.body.fullName} successfully created`);
+        console.log(`${newMember.fullName} successfully created`);
         
         // Add some validation check afterwards in public/js/memberDatabase.js
         return res.status(200).json({ 

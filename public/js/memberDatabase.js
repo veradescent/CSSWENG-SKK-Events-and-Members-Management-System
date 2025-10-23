@@ -89,11 +89,11 @@ document.addEventListener("DOMContentLoaded", function() {
             newRow.insertCell(3).setAttribute("style", borderStyle + bgStyle);
             newRow.insertCell(4).setAttribute("style", borderStyle + bgStyle);
 
-            newRow.cells[0].textContent = name;
-            newRow.cells[1].textContent = area;
-            newRow.cells[2].textContent = sim;
-            newRow.cells[3].textContent = contact;
-            newRow.cells[4].textContent = email;
+            newRow.cells[0].textContent = userInput.fullName;
+            newRow.cells[1].textContent = userInput.areaChurch;
+            newRow.cells[2].textContent = userInput.sim;
+            newRow.cells[3].textContent = userInput.contactNumber;
+            newRow.cells[4].textContent = userInput.emailAddress;
         }
         popup.style.display = "none";
     });
