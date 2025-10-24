@@ -1,6 +1,6 @@
 # CSSWENG-SKK-Events-and-Members-Management-System
 ```
-npm init
+npm init -y
 ```
 ```
 npm install express mongoose dotenv hbs
