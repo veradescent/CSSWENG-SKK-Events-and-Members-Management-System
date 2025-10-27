@@ -55,7 +55,13 @@
         <form id="memberForm">
             <input type="text" id="name" class="form-control mb-2" placeholder="Name" required>
             <input type="text" id="area" class="form-control mb-2" placeholder="Area" required>
-            <input type="text" id="sim" class="form-control mb-2" placeholder="SIM" required>
+            <select id="sim" class="form-select mb-2" required>
+                <option value="" disabled selected>Select SIM</option>
+                <option value="Kids">Kids</option>
+                <option value="Youth">Youth</option>
+                <option value="WOW">WOW</option>
+                <option value="DIG">DIG</option>
+            </select>
             <input type="text" id="contact" class="form-control mb-2" placeholder="Contact Number">
             <input type="email" id="email" class="form-control mb-2" placeholder="Email Address" required>
             <div class="text-end mt-3">

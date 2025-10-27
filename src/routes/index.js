@@ -2,6 +2,7 @@
 // const app = express()
 import { Router } from "express";
 import memDBRouter from "./memberDatabase.js"
+import createEventRouter from "./createEventRouter.js";
 
 
 const router = Router();
@@ -13,6 +14,7 @@ router.get('/', async (req, res) => {
   });
 });
 
-router.use(memDBRouter)
+router.use(memDBRouter);
+router.use(createEventRouter);
 
 export default router;

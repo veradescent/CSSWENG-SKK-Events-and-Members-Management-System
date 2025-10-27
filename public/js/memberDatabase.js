@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
         popupTitle.textContent = "Edit Member";
         document.getElementById("name").value = selectedRow.cells[0].textContent;
         document.getElementById("area").value = selectedRow.cells[1].textContent;
-        document.getElementById("sim").value = selectedRow.cells[2].textContent;
+        document.getElementById("sim").value;
         document.getElementById("contact").value = selectedRow.cells[3].textContent;
         document.getElementById("email").value = selectedRow.cells[4].textContent;
         popup.style.display = "flex";
@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
             emailAddress: document.getElementById("email").value.trim()
         };
         const jsonReq = JSON.stringify(userInput);
+        let res;
         // console.log(jsonReq);
 
         if (isEditing && selectedRow) {
@@ -63,37 +64,61 @@ document.addEventListener("DOMContentLoaded", function() {
             selectedRow.cells[2].textContent = userInput.sim;
             selectedRow.cells[3].textContent = userInput.contactNumber;
             selectedRow.cells[4].textContent = userInput.emailAddress;
-            const res = await fetch(`/editMember/${selectedId}`, {
+            res = await fetch(`/editMember/${selectedId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: jsonReq,
             });
+            // if (res.ok) {
+            //
+            // }
 
         } else {
-            const res = await fetch("/addMember", {
+            res = await fetch("/addMember", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: jsonReq,
             });
+            const data = await res.json()
+            console.log(`data.message: ${data.message}`)
 
-            const newRow = tableBody.insertRow();
-            const borderStyle = "border: 5px solid #bfbfc4;";
-            const bgStyle = "background-color: #e9ecef;";
-            newRow.insertCell(0).setAttribute("style", borderStyle + bgStyle);
-            newRow.insertCell(1).setAttribute("style", borderStyle + bgStyle);
-            newRow.insertCell(2).setAttribute("style", borderStyle + bgStyle);
-            newRow.insertCell(3).setAttribute("style", borderStyle + bgStyle);
-            newRow.insertCell(4).setAttribute("style", borderStyle + bgStyle);
+            // const newRow = tableBody.insertRow();
+            // const borderStyle = "border: 5px solid #bfbfc4;";
+            // const bgStyle = "background-color: #e9ecef;";
+            // newRow.insertCell(0).setAttribute("style", borderStyle + bgStyle);
+            // newRow.insertCell(1).setAttribute("style", borderStyle + bgStyle);
+            // newRow.insertCell(2).setAttribute("style", borderStyle + bgStyle);
+            // newRow.insertCell(3).setAttribute("style", borderStyle + bgStyle);
+            // newRow.insertCell(4).setAttribute("style", borderStyle + bgStyle);
+            //
+            // newRow.cells[0].textContent = userInput.fullName;
+            // newRow.cells[1].textContent = userInput.areaChurch;
+            // newRow.cells[2].textContent = userInput.sim;
+            // newRow.cells[3].textContent = userInput.contactNumber;
+            // newRow.cells[4].textContent = userInput.emailAddress;
+            if (res.ok) {
+                const newRow = tableBody.insertRow();
+                const borderStyle = "border: 5px solid #bfbfc4;";
+                const bgStyle = "background-color: #e9ecef;";
+                // newRow.insertCell(0).setAttribute("style", borderStyle + bgStyle);
+                newRow.insertCell(0).setAttribute("style", borderStyle + bgStyle);
+                newRow.insertCell(1).setAttribute("style", borderStyle + bgStyle);
+                newRow.insertCell(2).setAttribute("style", borderStyle + bgStyle);
+                newRow.insertCell(3).setAttribute("style", borderStyle + bgStyle);
+                newRow.insertCell(4).setAttribute("style", borderStyle + bgStyle);
 
-            newRow.cells[0].textContent = userInput.fullName;
-            newRow.cells[1].textContent = userInput.areaChurch;
-            newRow.cells[2].textContent = userInput.sim;
-            newRow.cells[3].textContent = userInput.contactNumber;
-            newRow.cells[4].textContent = userInput.emailAddress;
+                newRow.cells[0].textContent = userInput.fullName;
+                newRow.cells[1].textContent = userInput.areaChurch;
+                newRow.cells[2].textContent = userInput.sim;
+                newRow.cells[3].textContent = userInput.contactNumber;
+                newRow.cells[4].textContent = userInput.emailAddress;
+            } else {
+                alert(data.message || "An error occured");
+            }
         }
         popup.style.display = "none";
     });

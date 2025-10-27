@@ -60,9 +60,14 @@ memDBRouter.post('/addMember', async (req, res) => {
             emailAddress: req.body.emailAddress     
         });
         
-        await newMember.save(); 
-        console.log('Member Successfully created');
-        console.log(`${newMember.fullName} successfully created`);
+        try {
+            await newMember.save(); 
+        } catch (error) {
+            console.log(`Error from model: ${error}`)
+            return
+        }
+        // console.log('Member Successfully created');
+        // console.log(`${newMember.fullName} successfully created`);
         
         // Add some validation check afterwards in public/js/memberDatabase.js
         return res.status(200).json({ 
