@@ -143,7 +143,7 @@ function getSelectedMembers() {
 }
 
 // --- Buttons functionality ---
-document.getElementById("saveBtn").addEventListener("click", () => {
+document.getElementById("saveBtn").addEventListener("click", async function() {
     const eventData = {
         title: document.getElementById("eventTitle").value,
         description: document.getElementById("eventDescription").value,
@@ -156,6 +156,17 @@ document.getElementById("saveBtn").addEventListener("click", () => {
         customMembers: customCheckbox.checked ? getSelectedMembers() : [],
         image: uploadedImage
     };
+
+    // console.log(`date: ${eventData.date}`);
+    // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
+
+    const res = await fetch("/addMember", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+    });
 
     localStorage.setItem("savedEvent", JSON.stringify(eventData));
     alert("✅ Event saved successfully!");

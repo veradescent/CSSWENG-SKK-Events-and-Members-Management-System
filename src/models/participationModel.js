@@ -1,5 +1,5 @@
-import { Schema } from "mongoose";
-const { Schema, model } = mongoose
+import mongoose from "mongoose";
+const { Schema, model, SchemaTypes } = mongoose
 
 const participationSchema = new Schema({
     user: {
