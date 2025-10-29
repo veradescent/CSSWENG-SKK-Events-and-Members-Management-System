@@ -1,0 +1,178 @@
+let uploadedImage = "";
+
+// --- Image Upload ---
+document.getElementById("editImageBtn").addEventListener("click", () => {
+    document.getElementById("eventImage").click();
+});
+
+document.getElementById("eventImage").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const preview = document.getElementById("imagePreview");
+            preview.style.backgroundImage = `url('${event.target.result}')`;
+            preview.style.backgroundSize = "cover";
+            preview.style.backgroundPosition = "center";
+            preview.textContent = "";
+            uploadedImage = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// --- Time validation ---
+const timeFrom = document.getElementById("eventTimeFrom");
+const timeTo = document.getElementById("eventTimeTo");
+
+timeTo.addEventListener("change", () => {
+    if (timeFrom.value && timeTo.value && timeTo.value <= timeFrom.value) {
+        alert("End time must be after start time");
+        timeTo.value = "";
+    }
+});
+
+// --- Custom dropdown checklist functionality ---
+const customCheckbox = document.getElementById("custom");
+const sendAllCheckbox = document.getElementById("sendAll");
+const customDropdownContainer = document.getElementById("customDropdownContainer");
+const dropdownToggle = document.getElementById("dropdownToggle");
+const dropdownMenu = document.getElementById("dropdownMenu");
+const dropdownText = document.getElementById("dropdownText");
+const selectedCount = document.getElementById("selectedCount");
+const memberCheckboxes = document.querySelectorAll(".member-checkbox");
+const dropdownItems = document.querySelectorAll(".dropdown-item-custom");
+
+// Toggle custom dropdown visibility
+customCheckbox.addEventListener("change", () => {
+    if (customCheckbox.checked) {
+        sendAllCheckbox.checked = false;
+        customDropdownContainer.style.display = "inline-block";
+    } else {
+        customDropdownContainer.style.display = "none";
+        dropdownMenu.classList.remove("show");
+        // Uncheck all member checkboxes
+        memberCheckboxes.forEach(cb => cb.checked = false);
+        updateDropdownText();
+    }
+});
+
+sendAllCheckbox.addEventListener("change", () => {
+    if (sendAllCheckbox.checked) {
+        customCheckbox.checked = false;
+        customDropdownContainer.style.display = "none";
+        dropdownMenu.classList.remove("show");
+    }
+});
+
+// Toggle dropdown menu
+dropdownToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdownMenu.classList.toggle("show");
+});
+
+// Close dropdown when clicking outside
+document.addEventListener("click", (e) => {
+    if (!customDropdownContainer.contains(e.target)) {
+        dropdownMenu.classList.remove("show");
+    }
+});
+
+// Update dropdown text based on selected members
+function updateDropdownText() {
+    const selected = Array.from(memberCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+    if (selected.length === 0) {
+        dropdownText.textContent = "Select members";
+        selectedCount.textContent = "";
+    } else if (selected.length === 1) {
+        dropdownText.textContent = selected[0];
+        selectedCount.textContent = "";
+    } else {
+        dropdownText.textContent = selected[0];
+        selectedCount.textContent = `+${selected.length - 1} more`;
+    }
+}
+
+// Handle checkbox changes
+memberCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener("change", updateDropdownText);
+});
+
+// Make clicking anywhere on the dropdown item toggle the checkbox
+dropdownItems.forEach(item => {
+    item.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const checkbox = item.querySelector(".member-checkbox");
+        checkbox.checked = !checkbox.checked;
+
+        // Trigger change event to update the display
+        checkbox.dispatchEvent(new Event('change'));
+    });
+});
+
+// Prevent dropdown from closing when clicking inside
+dropdownMenu.addEventListener("click", (e) => {
+    e.stopPropagation();
+});
+
+// --- Used to clear the forms as a func ---
+function clearForm() {
+    document.querySelectorAll("input, select").forEach(el => {
+        if (el.type === "checkbox") el.checked = false;
+        else el.value = "";
+    });
+    const preview = document.getElementById("imagePreview");
+    preview.style.backgroundImage = "";
+    preview.textContent = "Sample Announcement Image\nand Captions";
+    customDropdownContainer.style.display = "none";
+    dropdownMenu.classList.remove("show");
+    uploadedImage = "";
+    updateDropdownText();
+}
+
+// --- Get selected members ---
+function getSelectedMembers() {
+    return Array.from(memberCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+}
+
+// --- Buttons functionality ---
+document.getElementById("saveBtn").addEventListener("click", () => {
+    const eventData = {
+        title: document.getElementById("eventTitle").value,
+        description: document.getElementById("eventDescription").value,
+        attendees: document.getElementById("eventAttendees").value,
+        type: document.getElementById("eventType").value,
+        date: document.getElementById("eventDate").value,
+        timeFrom: document.getElementById("eventTimeFrom").value,
+        timeTo: document.getElementById("eventTimeTo").value,
+        sendAll: sendAllCheckbox.checked,
+        customMembers: customCheckbox.checked ? getSelectedMembers() : [],
+        image: uploadedImage
+    };
+
+    localStorage.setItem("savedEvent", JSON.stringify(eventData));
+    alert("✅ Event saved successfully!");
+    console.log("Saved event data:", eventData);
+    clearForm();
+});
+
+document.getElementById("deleteBtn").addEventListener("click", () => {
+    if (confirm("Are you sure you want to delete this event?")) {
+        localStorage.removeItem("savedEvent");
+        alert("🗑️ Event deleted successfully!");
+        clearForm();
+    }
+});
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+    if (confirm("Cancel and clear all fields?")) {
+        clearForm();
+    }
+});
