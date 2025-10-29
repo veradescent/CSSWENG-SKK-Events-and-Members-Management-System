@@ -27,7 +27,10 @@ memDBRouter.get('/member-database', async (req, res) => { //put isAdmin check be
       .lean()
       .exec();
 
-    res.render('memberDatabase', { members: allMembers });
+    res.render('memberDatabase', { 
+      members: allMembers,
+      title: "Member Database"
+    });
   } catch (error) {
     console.error("Error fetching members:", error);
     res.status(500).send("Internal Server Error");

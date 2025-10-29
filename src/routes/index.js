@@ -3,7 +3,7 @@
 import { Router } from "express";
 import memDBRouter from "./memberDatabase.js"
 import createEventRouter from "./createEventRouter.js";
-
+import editEventRouter from "./editEventRouter.js";
 
 const router = Router();
 
@@ -16,5 +16,6 @@ router.get('/', async (req, res) => {
 
 router.use(memDBRouter);
 router.use(createEventRouter);
+router.use(editEventRouter);
 
 export default router;
