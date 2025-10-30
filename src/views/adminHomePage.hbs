@@ -27,24 +27,36 @@
             <h2 class="fw-bold display-6">Upcoming Events</h2>
         </div>
         <div class="mt-3 hstack">
+        {{#each upcoming}}
             <div class="me-3">
                 <div class="card mt-3">
                     <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">October 15, 2025 | 9:00AM - 3:00PM</h6>
-                        <h5 class="card-title">SKK General Assembly</h5>
-                        <p>Meeting with all members of SKK to discuss plans for the remaining months of the year</p>
+                        <h6 class="card-subtitle mb-2 text-muted">{{displayDate}} | {{displayStartTime}} - {{displayEndTime}}</h6>
+                        <h5 class="card-title">{{eventName}}</h5>
+                        <p>{{eventDescription}}</p>
                     </div>
                 </div>
             </div>
-            <div class="me-3">
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">October 19, 2025 | 1:00PM - 3:00PM</h6>
-                        <h5 class="card-title">Church Event</h5>
-                        <p>Organization heads and officers will have an important meeting to discuss SKK’s future plans and event</p>
-                    </div>
-                </div>
-            </div>
+        {{/each}}
+                
+            <!-- <div class="me-3"> -->
+            <!--     <div class="card mt-3"> -->
+            <!--         <div class="card-body"> -->
+            <!--             <h6 class="card-subtitle mb-2 text-muted">October 15, 2025 | 9:00AM - 3:00PM</h6> -->
+            <!--             <h5 class="card-title">SKK General Assembly</h5> -->
+            <!--             <p>Meeting with all members of SKK to discuss plans for the remaining months of the year</p> -->
+            <!--         </div> -->
+            <!--     </div> -->
+            <!-- </div> -->
+            <!-- <div class="me-3"> -->
+            <!--     <div class="card mt-3"> -->
+            <!--         <div class="card-body"> -->
+            <!--             <h6 class="card-subtitle mb-2 text-muted">October 19, 2025 | 1:00PM - 3:00PM</h6> -->
+            <!--             <h5 class="card-title">Church Event</h5> -->
+            <!--             <p>Organization heads and officers will have an important meeting to discuss SKK’s future plans and event</p> -->
+            <!--         </div> -->
+            <!--     </div> -->
+            <!-- </div> -->
         </div>
         <div class="justify-content-end">
             <button class="mt-3 btn btn-success rounded" id="create-event" type="button">Create a New Event</button>

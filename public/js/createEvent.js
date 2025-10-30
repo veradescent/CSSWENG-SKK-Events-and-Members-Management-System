@@ -160,7 +160,7 @@ document.getElementById("saveBtn").addEventListener("click", async function() {
     // console.log(`date: ${eventData.date}`);
     // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
 
-    const res = await fetch("/addMember", {
+    const res = await fetch("/addEvent", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -168,9 +168,19 @@ document.getElementById("saveBtn").addEventListener("click", async function() {
         body: JSON.stringify(eventData),
     });
 
-    localStorage.setItem("savedEvent", JSON.stringify(eventData));
-    alert("✅ Event saved successfully!");
-    console.log("Saved event data:", eventData);
+    const data = await res.json();
+
+    if (res.ok) {
+        alert(data.message);
+    } else {
+        console.error("Error: ", data.message);
+        alert("Error: ", data.message);
+    }
+
+    // 2023-02-18T14:54:28.555Z
+    // localStorage.setItem("savedEvent", JSON.stringify(eventData));
+    // alert("✅ Event saved successfully!");
+    // console.log("Saved event data:", eventData);
     clearForm();
 });
 
