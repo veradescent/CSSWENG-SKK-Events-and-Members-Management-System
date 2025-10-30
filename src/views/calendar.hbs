@@ -1,0 +1,48 @@
+<head>
+    <link rel="stylesheet" href="/css/calendar.css">
+    <script defer src="/js/calendar.js"></script>
+</head>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="fw-bold display-3">SKK Event Calendar</h1>
+    </div>
+
+    <div class="hstack">
+        {{!-- current month --}}
+        <div>
+            <h2 class="fw display-4" id="monthYear">October 2025</h2>
+        </div>
+
+        <div class="ms-auto">
+            {{!-- select month --}}
+            <div class="btn-group me-3 justify-content-md-end" role="group">
+                <button type="button" class="btn btn-success" id="prevBtn"><</button>
+                <button type="button" class="btn btn-success" id="nextBtn">></button>
+            </div>
+
+            {{!-- calender view (day/week/month) --}}
+            <div class="btn-group ms-auto" role="group">
+                <button type="button" class="btn btn-success" id="dayView">Day</button>
+                <button type="button" class="btn btn-success" id="weekView">Week</button>
+                <button type="button" class="btn btn-success" id="monthView">Month</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calendar">
+        <div id="days" class="row text-center">
+            <div class="col">SUN</div>
+            <div class="col">MON</div>
+            <div class="col">TUE</div>
+            <div class="col">WED</div>
+            <div class="col">THU</div>
+            <div class="col">FRI</div>
+            <div class="col">SAT</div>
+        </div>
+        <div id="dates" class="text-center"></div>
+    </div>
+
+    <div>
+        <button class="mt-3 btn btn-success rounded" type="button">View Statistics</button>
+    </div>
+</div>
