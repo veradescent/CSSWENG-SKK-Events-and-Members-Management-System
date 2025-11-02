@@ -142,8 +142,11 @@ function getSelectedMembers() {
         .map(cb => cb.value);
 }
 
-// --- Buttons functionality ---
-document.getElementById("saveBtn").addEventListener("click", async function() {
+const form = document.getElementById('eventForm');
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
     const eventData = {
         title: document.getElementById("eventTitle").value,
         description: document.getElementById("eventDescription").value,
@@ -184,16 +187,61 @@ document.getElementById("saveBtn").addEventListener("click", async function() {
     clearForm();
 });
 
-document.getElementById("deleteBtn").addEventListener("click", () => {
-    if (confirm("Are you sure you want to delete this event?")) {
-        localStorage.removeItem("savedEvent");
-        alert("🗑️ Event deleted successfully!");
-        clearForm();
-    }
-});
+// --- Buttons functionality ---
+// document.getElementById("saveBtn").addEventListener("click", async function() {
+//     const eventData = {
+//         title: document.getElementById("eventTitle").value,
+//         description: document.getElementById("eventDescription").value,
+//         attendees: document.getElementById("eventAttendees").value,
+//         type: document.getElementById("eventType").value,
+//         date: document.getElementById("eventDate").value,
+//         timeFrom: document.getElementById("eventTimeFrom").value,
+//         timeTo: document.getElementById("eventTimeTo").value,
+//         sendAll: sendAllCheckbox.checked,
+//         customMembers: customCheckbox.checked ? getSelectedMembers() : [],
+//         image: uploadedImage
+//     };
+//
+//     // console.log(`date: ${eventData.date}`);
+//     // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
+//
+//     const res = await fetch("/addEvent", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(eventData),
+//     });
+//
+//     const data = await res.json();
+//
+//     if (res.ok) {
+//         alert(data.message);
+//     } else {
+//         console.error("Error: ", data.message);
+//         alert("Error: ", data.message);
+//     }
+//
+//     // 2023-02-18T14:54:28.555Z
+//     // localStorage.setItem("savedEvent", JSON.stringify(eventData));
+//     // alert("✅ Event saved successfully!");
+//     // console.log("Saved event data:", eventData);
+//     clearForm();
+// });
+
+// document.getElementById("deleteBtn").addEventListener("click", () => {
+//     if (confirm("Are you sure you want to delete this event?")) {
+//         localStorage.removeItem("savedEvent");
+//         alert("🗑️ Event deleted successfully!");
+//         clearForm();
+//     }
+// });
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
     if (confirm("Cancel and clear all fields?")) {
         clearForm();
     }
 });
+
+const eventDate = document.getElementById('eventDate');
+eventDate.min = new Date().toISOString().split("T")[0];

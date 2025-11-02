@@ -11,6 +11,12 @@ import timezone from "dayjs/plugin/timezone.js";
 
 const router = Router();
 
+function truncate(str) {
+    return str.length >  150
+    ? str.slice (0, 150) + "..."
+    : str;
+}
+
 router.get('/', async (req, res) => {
     try {
         const nowManila = dayjs().tz('Asia/Manila');
@@ -19,7 +25,7 @@ router.get('/', async (req, res) => {
         const upcomingEvents = await Event.find({
             startDateTime: { $gte: nowUTC },
             // status: { $ne: 'cancelled' }
-        }).sort({ startDateTime: 1 }).limit(3);
+        }).sort({ startDateTime: 1 });
 
         const formattedEvents = upcomingEvents.map(event => {
             const eventObj = event.toObject();
@@ -28,9 +34,10 @@ router.get('/', async (req, res) => {
                 ...eventObj,
                 // Add formatted Manila times
                 displayDate: dayjs(event.startDateTime).tz('Asia/Manila').format('MMMM DD, YYYY'),
-                displayStartTime: dayjs(event.startDateTime).tz('Asia/Manila').format('HH:mm A'),
-                displayEndTime: dayjs(event.endDateTime).tz('Asia/Manila').format('HH:mm A'),
-                displayDateTime: dayjs(event.startDateTime).tz('Asia/Manila').format('MMMM DD, YYYY [at] h:mm A')
+                displayStartTime: dayjs(event.startDateTime).tz('Asia/Manila').format('HH:mmA'),
+                displayEndTime: dayjs(event.endDateTime).tz('Asia/Manila').format('HH:mmA'),
+                displayDateTime: dayjs(event.startDateTime).tz('Asia/Manila').format('MMMM DD, YYYY [at] h:mm A'),
+                eventDescription: truncate(event.eventDescription),
             };
         }); 
 

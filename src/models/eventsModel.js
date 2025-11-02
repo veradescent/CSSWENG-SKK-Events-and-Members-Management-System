@@ -8,8 +8,6 @@ const eventSchema = new Schema({
         trim: true
     },
     eventDescription: {type: String},
-    // dateHeld: {type: Date, required: true},     // stored in UTC
-    // timeFrom: {type: String, required: true},   // UTC
     startDateTime: {    // UTC
         type: Date,
         required: true
