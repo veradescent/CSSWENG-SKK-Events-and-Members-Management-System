@@ -55,7 +55,8 @@ createEventRouter.post('/addEvent', async (req, res) => {
         eventDescription: description,
         startDateTime: startDateTimeUTC,
         endDateTime: endDateTimeUTC,
-        type: req.body.type
+        type: req.body.type,
+        expectedAttendees: Number(attendees) || 0
     });
 
     try {

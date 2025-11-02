@@ -16,6 +16,11 @@ const eventSchema = new Schema({
         type: Date,
         required: true
     },
+    expectedAttendees: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
     type: {type: String, required: true},       // not sure if category is limited to these Meeting', 'Workshop', 'Social' 
 });
 

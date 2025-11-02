@@ -199,7 +199,7 @@ form.addEventListener('submit', async function(e) {
     // alert("✅ Event saved successfully!");
     // console.log("Saved event data:", eventData);
     // timeFrom.min = new Date().toLocaleTimeString('en-ph', {hour12: false});
-    clearForm();
+    window.location.href = "/";
 });
 
 // --- Buttons functionality ---
@@ -254,7 +254,7 @@ form.addEventListener('submit', async function(e) {
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
     if (confirm("Cancel and clear all fields?")) {
-        clearForm();
+        window.location.href = "/";
     }
 });
 
