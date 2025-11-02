@@ -22,6 +22,8 @@ document.getElementById("eventImage").addEventListener("change", (e) => {
 });
 
 // --- Time validation ---
+const currentDate = new Date();
+currentDate.setMinutes(currentDate.getMinutes() - currentDate.getTimezoneOffset());
 const timeFrom = document.getElementById("eventTimeFrom");
 const timeTo = document.getElementById("eventTimeTo");
 
@@ -163,6 +165,18 @@ form.addEventListener('submit', async function(e) {
     // console.log(`date: ${eventData.date}`);
     // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
 
+    if (event.date === currentDate.toISOString().split("T")[0]) {
+        const now = new Date();
+        const [hours, minutes] = selectedTime.split(':');
+        const selectedDateTime = new Date();
+        selectedDateTime.setHours(hours, minutes, 0, 0);
+
+        if (selectedDateTime < now) {
+            alert('Please select a time in the future');
+            return;
+        }
+    }
+
     const res = await fetch("/addEvent", {
         method: "POST",
         headers: {
@@ -184,6 +198,7 @@ form.addEventListener('submit', async function(e) {
     // localStorage.setItem("savedEvent", JSON.stringify(eventData));
     // alert("✅ Event saved successfully!");
     // console.log("Saved event data:", eventData);
+    // timeFrom.min = new Date().toLocaleTimeString('en-ph', {hour12: false});
     clearForm();
 });
 
@@ -244,4 +259,26 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 });
 
 const eventDate = document.getElementById('eventDate');
-eventDate.min = new Date().toISOString().split("T")[0];
+// eventDate.setMinutes(today.getMinutes() - today.getTimezoneOffset()); // convert to UTC+8
+eventDate.min = currentDate.toISOString().split("T")[0];
+
+
+function updateTimeRestriction() {
+    const selectedDate = eventDate.value;
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    const todayString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    
+    if (selectedDate === todayString) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        eventTimeFrom.min = `${hours}:${minutes}`;
+    } else {
+        eventTimeFrom.min = '';
+    }
+}
+
+eventDate.addEventListener('change', updateTimeRestriction);
+
+updateTimeRestriction();

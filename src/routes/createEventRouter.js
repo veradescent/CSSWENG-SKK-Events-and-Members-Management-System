@@ -32,19 +32,6 @@ createEventRouter.get('/createEvent', async (req, res) => {
 
 createEventRouter.post('/addEvent', async (req, res) => {
 
-    // const eventData = {
-    //     title: document.getElementById("eventTitle").value,
-    //     description: document.getElementById("eventDescription").value,
-    //     attendees: document.getElementById("eventAttendees").value,
-    //     type: document.getElementById("eventType").value,
-    //     date: document.getElementById("eventDate").value,
-    //     timeFrom: document.getElementById("eventTimeFrom").value,
-    //     timeTo: document.getElementById("eventTimeTo").value,
-    //     sendAll: sendAllCheckbox.checked,
-    //     customMembers: customCheckbox.checked ? getSelectedMembers() : [],
-    //     image: uploadedImage
-    // };
-
     // TODO: add attendees handling by linking the attendees' ids in participationModel and event id
     // time data received from user is in UTC+8
     const { title, description, attendees, type, date, timeFrom, timeTo, sendAll, customMembers } = req.body;
