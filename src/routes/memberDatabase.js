@@ -20,22 +20,66 @@ function isAdmin(req, res, next) {
 }
 
 //GET to display db
-memDBRouter.get('/member-database', async (req, res) => { //put isAdmin check before the async func when completed
+// GET to display db with search, filter, and sort
+memDBRouter.get('/member-database', async (req, res) => {
   try {
-    const allMembers = await Member.find({})
-      .sort({ dateAdded: 1 })
+    const { search, areaChurch, sim, sort } = req.query;
+    const query = {};
+
+    // 🔍 Text search
+    if (search) {
+      query.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { emailAddress: { $regex: search, $options: 'i' } },
+        { contactNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // 🧭 Filters
+    if (areaChurch && areaChurch !== "All") query.areaChurch = areaChurch;
+    if (sim && sim !== "All") query.sim = sim;
+
+    // 🔢 Sorting options
+    let sortOption = {};
+    switch (sort) {
+      case "name_asc":
+        sortOption.fullName = 1;
+        break;
+      case "name_desc":
+        sortOption.fullName = -1;
+        break;
+      case "area_asc":
+        sortOption.areaChurch = 1;
+        break;
+      case "area_desc":
+        sortOption.areaChurch = -1;
+        break;
+      case "sim_asc":
+        sortOption.sim = 1;
+        break;
+      case "sim_desc":
+        sortOption.sim = -1;
+        break;
+      default:
+        sortOption.fullName = 1; // default sorting
+    }
+
+    const allMembers = await Member.find(query)
+      .sort(sortOption)
       .lean()
       .exec();
 
-    res.render('memberDatabase', { 
+    res.render('memberDatabase', {
       members: allMembers,
-      title: "Member Database"
+      title: "Member Database",
+      filters: { search, areaChurch, sim, sort }
     });
   } catch (error) {
     console.error("Error fetching members:", error);
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 //DELETE by id
 memDBRouter.delete("/member-database/:id", async (req, res) => {

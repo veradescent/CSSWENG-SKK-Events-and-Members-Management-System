@@ -11,18 +11,67 @@
         <h1 class="fw-bold display-3">SKK Member Database</h1>
     </div>
 
-    <div class="mt-5">
+        <div class="mt-5">
         <div class="mt-3 mb-3">
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" style="border: 2px solid #6c757d; border-radius: 15px; padding: 0.5rem 1rem; width: 300px;">
-                <button class="btn btn-outline-success rounded-circle me-2" type="submit" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-search"></i>
+            <form class="d-flex align-items-center" role="search" action="/member-database" method="GET">
+            
+            <!-- 🔍 Search box -->
+            <input 
+                class="form-control me-2" 
+                type="search" 
+                name="search"
+                placeholder="Search by name, email, or contact"
+                aria-label="Search"
+                value="{{filters.search}}"
+                style="border: 2px solid #6c757d; border-radius: 15px; padding: 0.5rem 1rem; width: 300px;"
+            >
+
+            <!-- ✅ Search button -->
+            <button 
+                class="btn btn-outline-success rounded-circle me-2" 
+                type="submit"
+                style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"
+            >
+                <i class="bi bi-search"></i>
+            </button>
+
+            <!-- ⚙️ Sort dropdown -->
+            <div class="dropdown me-2">
+                <button 
+                class="btn btn-outline-primary rounded-circle dropdown-toggle"
+                type="button"
+                id="sortDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"
+                >
+                <i class="bi bi-sort-alpha-down"></i>
                 </button>
-                <button class="btn btn-outline-secondary rounded-circle" type="button" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-filter"></i>
-                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                <li><button class="dropdown-item" type="submit" name="sort" value="name_asc">Name (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="name_desc">Name (Z–A)</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="area_asc">Area (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="area_desc">Area (Z–A)</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="sim_asc">SIM (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="sim_desc">SIM (Z–A)</button></li>
+                </ul>
+            </div>
+
+            <!-- 🔽 Filter button (for future dropdown filters) -->
+            <button 
+                class="btn btn-outline-secondary rounded-circle" 
+                type="button"
+                style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"
+                onclick="toggleFilters()"
+            >
+                <i class="bi bi-filter"></i>
+            </button>
             </form>
         </div>
+        </div>
+
 
          <table class="table table-bordered" style="border: 2px solid #6c757d; border-radius: 15px; overflow: hidden;">
             <thead style="background-color: #adb5bd !important;">
