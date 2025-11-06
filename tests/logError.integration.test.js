@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import ErrorLog from '../models/errorLog.js';
-import ErrorLog from '../models/errorLog.js';
+import ErrorLog from '../models/errorLogs.js';
 
 let mongod;
 beforeAll(async () => {
