@@ -3,7 +3,7 @@
 export default async function logError(error, req, ErrorLogModel) {
   try {
     console.log("Logging error:", error.message);
-    await ErrorLog.create({
+    await ErrorLogModel.create({
       message: error.message,
       stack: error.stack,
       route: req.originalUrl,
