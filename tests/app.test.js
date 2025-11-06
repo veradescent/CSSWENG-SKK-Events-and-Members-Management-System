@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const path = require('path');
+import mongoose from 'mongoose';
+import path from 'path';
 
 const mockCreate = jest.fn().mockResolvedValue(true);
 
