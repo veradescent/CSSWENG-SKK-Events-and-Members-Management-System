@@ -5,6 +5,7 @@ import memDBRouter from "./memberDatabase.js"
 import createEventRouter from "./createEventRouter.js";
 import editEventRouter from "./editEventRouter.js";
 import Event from "../models/eventsModel.js";
+import calenderRouter from "./calendarRouter.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
