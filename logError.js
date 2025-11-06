@@ -1,4 +1,4 @@
-import ErrorLog from './src/models/errorLogs.js';
+//import ErrorLog from './src/models/errorLogs.js';
 
 export default async function logError(error, req, ErrorLogModel) {
   try {
