@@ -9,6 +9,7 @@ import calenderRouter from "./calendarRouter.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
+import logError from '../../logError.js';
 
 const router = Router();
 
@@ -58,6 +59,7 @@ router.get('/', async (req, res) => {
         })
     } catch (error) {
         console.error(error);
+        await logError(error, req);
     }
 });
 

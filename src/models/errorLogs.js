@@ -10,4 +10,3 @@ const errorLogSchema = new mongoose.Schema({
 const ErrorLog = mongoose.models.ErrorLog || mongoose.model('ErrorLog', errorLogSchema);
 
 export default ErrorLog;
-

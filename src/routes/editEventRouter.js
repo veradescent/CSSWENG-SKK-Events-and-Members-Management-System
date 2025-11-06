@@ -3,6 +3,7 @@ import Event from "../models/eventsModel.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
+import logError from '../../logError.js';
 
 const editEventRouter = Router();
 dayjs.extend(utc);
@@ -36,6 +37,7 @@ editEventRouter.get('/editEvent/:id', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading event for editing:', err);
+        await logError(err, req);
         return res.status(500).send('Internal Server Error');
     }
 });
@@ -50,6 +52,7 @@ editEventRouter.delete('/editEvent/:id', async (req, res) => {
         return res.status(200).json({ success: true, message: 'Event deleted' });
     } catch (err) {
         console.error('Error deleting event:', err);
+        await logError(err, req);
         return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
@@ -88,6 +91,7 @@ editEventRouter.put('/editEvent/:id', async (req, res) => {
         return res.status(200).json({ success: true, message: 'Event updated', event: updated });
     } catch (err) {
         console.error('Error updating event:', err);
+        await logError(err, req);
         return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });

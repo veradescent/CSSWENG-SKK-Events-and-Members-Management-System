@@ -4,6 +4,7 @@ import Event from "../models/eventsModel.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
+import logError from '../../logError.js';
 
 
 const createEventRouter = Router();
@@ -26,6 +27,7 @@ createEventRouter.get('/createEvent', async (req, res) => {
             title: "Create Event",
         })
     } catch (error) {
+        await logError(error, req);
         console.error(error);
     }
 })
@@ -67,6 +69,7 @@ createEventRouter.post('/addEvent', async (req, res) => {
         });
     } catch (error) {
         console.log(`Error from model: ${error}`);
+        await logError(error, req);
         return res.status(500).json({
             status: false,
             message: 'Event was not created'

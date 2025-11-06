@@ -6,6 +6,8 @@ const mockCreate = jest.fn().mockResolvedValue(true);
 // Mock the module using the real path under src so Jest can find it
 jest.mock('../src/models/errorLogs', () => ({ create: mockCreate }));
 
+// ./src/models/errorLog.js'
+
 const logError = require('../logError');
 
 describe('logError', () => {

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Events from "../models/eventsModel.js"
+import logError from '../../logError.js';
 
 const eventsRouter = Router();
 
@@ -13,6 +14,7 @@ eventsRouter.get('/event-view', async (req, res) => {
     res.render('memberDatabase', { members: allMembers });
   } catch (error) {
     console.error("Error fetching members:", error);
+    await logError(error, req);
     res.status(500).send("Internal Server Error");
   }
 });
