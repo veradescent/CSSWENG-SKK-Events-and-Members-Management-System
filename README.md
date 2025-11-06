@@ -19,6 +19,9 @@ Install Jest
 ```
 npm install --save-dev jest
 ```
+```
+npm install --save-dev mongodb-memory-server
+```
 Run tests
 ```
 npm test
