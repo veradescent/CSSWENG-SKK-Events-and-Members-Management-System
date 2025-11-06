@@ -1,14 +1,7 @@
-import mongoose from 'mongoose';
-import path from 'path';
+import { jest } from '@jest/globals';
+import logError from '../logError.js';
 
 const mockCreate = jest.fn().mockResolvedValue(true);
-
-// Mock the module using the real path under src so Jest can find it
-jest.mock('../src/models/errorLogs', () => ({ create: mockCreate }));
-
-// ./src/models/errorLog.js'
-
-const logError = require('../logError');
 
 describe('logError', () => {
   beforeEach(() => {
@@ -19,7 +12,7 @@ describe('logError', () => {
     const fakeReq = { originalUrl: '/test-route', method: 'POST' };
     const err = new Error('Unit test error');
 
-    await expect(logError(err, fakeReq)).resolves.toBeUndefined();
+    await expect(logError(err, fakeReq, { create: mockCreate })).resolves.toBeUndefined();
 
     expect(mockCreate).toHaveBeenCalledTimes(1);
     expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
@@ -35,13 +28,10 @@ describe('logError', () => {
 
     const fakeReq = { originalUrl: '/fail-route', method: 'GET' };
     const err = new Error('Another test error');
-
+    
     // logError should catch internal errors and not reject
-    await expect(logError(err, fakeReq)).resolves.toBeUndefined();
+    await expect(logError(err, fakeReq, { create: mockCreate })).resolves.toBeUndefined();
     expect(mockCreate).toHaveBeenCalled();
   });
 });
 
-test('hello world', () => {
-  expect(true).toBe(true);
-});
