@@ -14,3 +14,15 @@ PORT= <port number>
 MONGODB_URI= <mongodb connection string>
 ```
 
+### Test
+Install Jest
+```
+npm install --save-dev jest
+```
+```
+npm install --save-dev mongodb-memory-server
+```
+Run tests
+```
+npm test
+```

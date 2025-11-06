@@ -22,6 +22,8 @@ document.getElementById("eventImage").addEventListener("change", (e) => {
 });
 
 // --- Time validation ---
+const currentDate = new Date();
+currentDate.setMinutes(currentDate.getMinutes() - currentDate.getTimezoneOffset());
 const timeFrom = document.getElementById("eventTimeFrom");
 const timeTo = document.getElementById("eventTimeTo");
 
@@ -142,8 +144,11 @@ function getSelectedMembers() {
         .map(cb => cb.value);
 }
 
-// --- Buttons functionality ---
-document.getElementById("saveBtn").addEventListener("click", () => {
+const form = document.getElementById('eventForm');
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
     const eventData = {
         title: document.getElementById("eventTitle").value,
         description: document.getElementById("eventDescription").value,
@@ -157,22 +162,123 @@ document.getElementById("saveBtn").addEventListener("click", () => {
         image: uploadedImage
     };
 
-    localStorage.setItem("savedEvent", JSON.stringify(eventData));
-    alert("✅ Event saved successfully!");
-    console.log("Saved event data:", eventData);
-    clearForm();
+    // console.log(`date: ${eventData.date}`);
+    // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
+
+    if (event.date === currentDate.toISOString().split("T")[0]) {
+        const now = new Date();
+        const [hours, minutes] = selectedTime.split(':');
+        const selectedDateTime = new Date();
+        selectedDateTime.setHours(hours, minutes, 0, 0);
+
+        if (selectedDateTime < now) {
+            alert('Please select a time in the future');
+            return;
+        }
+    }
+
+    const res = await fetch("/addEvent", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+        alert(data.message);
+    } else {
+        console.error("Error: ", data.message);
+        alert("Error: ", data.message);
+    }
+
+    // 2023-02-18T14:54:28.555Z
+    // localStorage.setItem("savedEvent", JSON.stringify(eventData));
+    // alert("✅ Event saved successfully!");
+    // console.log("Saved event data:", eventData);
+    // timeFrom.min = new Date().toLocaleTimeString('en-ph', {hour12: false});
+    window.location.href = "/";
 });
 
-document.getElementById("deleteBtn").addEventListener("click", () => {
-    if (confirm("Are you sure you want to delete this event?")) {
-        localStorage.removeItem("savedEvent");
-        alert("🗑️ Event deleted successfully!");
-        clearForm();
-    }
-});
+// --- Buttons functionality ---
+// document.getElementById("saveBtn").addEventListener("click", async function() {
+//     const eventData = {
+//         title: document.getElementById("eventTitle").value,
+//         description: document.getElementById("eventDescription").value,
+//         attendees: document.getElementById("eventAttendees").value,
+//         type: document.getElementById("eventType").value,
+//         date: document.getElementById("eventDate").value,
+//         timeFrom: document.getElementById("eventTimeFrom").value,
+//         timeTo: document.getElementById("eventTimeTo").value,
+//         sendAll: sendAllCheckbox.checked,
+//         customMembers: customCheckbox.checked ? getSelectedMembers() : [],
+//         image: uploadedImage
+//     };
+//
+//     // console.log(`date: ${eventData.date}`);
+//     // console.log(`event duration: ${eventData.timeFrom} ~ ${eventData.timeTo}`);
+//
+//     const res = await fetch("/addEvent", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify(eventData),
+//     });
+//
+//     const data = await res.json();
+//
+//     if (res.ok) {
+//         alert(data.message);
+//     } else {
+//         console.error("Error: ", data.message);
+//         alert("Error: ", data.message);
+//     }
+//
+//     // 2023-02-18T14:54:28.555Z
+//     // localStorage.setItem("savedEvent", JSON.stringify(eventData));
+//     // alert("✅ Event saved successfully!");
+//     // console.log("Saved event data:", eventData);
+//     clearForm();
+// });
+
+// document.getElementById("deleteBtn").addEventListener("click", () => {
+//     if (confirm("Are you sure you want to delete this event?")) {
+//         localStorage.removeItem("savedEvent");
+//         alert("🗑️ Event deleted successfully!");
+//         clearForm();
+//     }
+// });
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
     if (confirm("Cancel and clear all fields?")) {
-        clearForm();
+        window.location.href = "/";
     }
 });
+
+const eventDate = document.getElementById('eventDate');
+// eventDate.setMinutes(today.getMinutes() - today.getTimezoneOffset()); // convert to UTC+8
+eventDate.min = currentDate.toISOString().split("T")[0];
+
+
+function updateTimeRestriction() {
+    const selectedDate = eventDate.value;
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    const todayString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    
+    if (selectedDate === todayString) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        eventTimeFrom.min = `${hours}:${minutes}`;
+    } else {
+        eventTimeFrom.min = '';
+    }
+}
+
+eventDate.addEventListener('change', updateTimeRestriction);
+
+updateTimeRestriction();

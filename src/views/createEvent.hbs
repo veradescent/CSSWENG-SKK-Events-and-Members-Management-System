@@ -1,123 +1,125 @@
 <head>
-    <link rel="stylesheet" href="/css/createEditEvent.css">
-    <script defer src="/js/createEditEvent.js"></script>
+<link rel="stylesheet" href="/css/createEditEvent.css">
+    <script defer src="/js/createEvent.js"></script>
 </head>
 
 <a href="/" class="back-link">&lt; Back</a>
 
 <div class="container-box">
-  <h1>Create Event</h1>
+<h1>Create Event</h1>
 
-  <!-- Title -->
-  <div class="mb-3">
-    <label>Title Name</label>
-    <input type="text" id="eventTitle" class="form-control" placeholder="Enter title">
-  </div>
+<!-- Title -->
+<form id="eventForm">
+<div class="mb-3">
+<label>Title Name</label>
+<input type="text" id="eventTitle" class="form-control" placeholder="Enter title" required>
+</div>
 
-  <!-- Description -->
-  <div class="mb-3">
-    <label>Description</label>
-    <input type="text" id="eventDescription" class="form-control" placeholder="Input text here">
-  </div>
+<!-- Description -->
+<div class="mb-3">
+<label>Description</label>
+<input type="text" id="eventDescription" class="form-control" placeholder="Input text here" required>
+</div>
 
-  <!-- upload image here-->
-  <div class="mb-3 text-center">
-    <div id="imagePreview" class="image-box">
-      Sample Announcement Image<br>and Captions
+<!-- upload image here-->
+<div class="mb-3 text-center">
+<div id="imagePreview" class="image-box">
+Sample Announcement Image<br>and Captions
+</div>
+<input type="file" id="eventImage" accept="image/*" class="form-control d-none">
+    <button id="editImageBtn" class="btn btn-edit">Add image</button>
+</div>
+
+<!-- Event Details -->
+<div class="mt-4">
+<label class="fw-bold d-block" required>Event details:</label>
+<div class="row g-3 align-items-center">
+<div class="col-md-6">
+    <label class="form-label">No. of Attendees:</label>
+    <input type="number" id="eventAttendees" class="form-control" placeholder="Enter number">
     </div>
-    <input type="file" id="eventImage" accept="image/*" class="form-control d-none">
-    <button id="editImageBtn" class="btn btn-edit">Edit image</button>
-  </div>
-
-  <!-- Event Details -->
-  <div class="mt-4">
-    <label class="fw-bold d-block">Event details:</label>
-    <div class="row g-3 align-items-center">
-      <div class="col-md-6">
-        <label class="form-label">No. of Attendees:</label>
-        <input type="number" id="eventAttendees" class="form-control" placeholder="Enter number">
-      </div>
-      <div class="col-md-6">
+    <div class="col-md-6">
         <label class="form-label">Type:</label>
         <select id="eventType" class="form-select">
-          <option>Select type</option>
-          <option>Meeting</option>
-          <option>Workshop</option>
-          <option>Social</option>
+            <option>Select type</option>
+            <option>Meeting</option>
+            <option>Workshop</option>
+            <option>Social</option>
         </select>
-      </div>
     </div>
+</div>
 
-    <div class="row g-3 mt-2">
-      <div class="col-md-12">
-        <label class="form-label">Date:</label>
-        <input type="date" id="eventDate" class="form-control">
-      </div>
+<div class="row g-3 mt-2">
+<div class="col-md-12">
+    <label class="form-label">Date:</label>
+    <input type="date" id="eventDate" class="form-control" required>
     </div>
+</div>
 
-    <div class="row g-3 mt-2 align-items-center">
-      <div class="col-md-6">
-        <label class="form-label">Time From:</label>
-        <input type="time" id="eventTimeFrom" class="form-control">
-      </div>
-      <div class="col-md-6">
+<div class="row g-3 mt-2 align-items-center">
+<div class="col-md-6">
+    <label class="form-label">Time From:</label>
+    <input type="time" id="eventTimeFrom" class="form-control" required>
+    </div>
+    <div class="col-md-6">
         <label class="form-label">Time To:</label>
-        <input type="time" id="eventTimeTo" class="form-control">
-      </div>
-    </div>
-  </div>
-
-  <!-- Send Invitation -->
-  <div class="mt-4">
-    <label class="fw-bold d-block">Send invitation:</label>
-
-    <div class="d-flex align-items-center flex-wrap gap-3">
-      <div>
-        <input type="checkbox" id="sendAll">
-        <label for="sendAll">Send to all members</label>
-      </div>
-
-      <div class="d-flex align-items-center">
-        <input type="checkbox" id="custom">
-        <label for="custom" class="ms-2 me-2">Custom:</label>
-        
-        <!-- Custom Dropdown Checklist -->
-        <div class="custom-dropdown" id="customDropdownContainer" style="display: none;">
-          <div class="dropdown-toggle" id="dropdownToggle">
-            <span id="dropdownText">Select members</span>
-            <span class="selected-count" id="selectedCount"></span>
-          </div>
-          <div class="dropdown-menu-custom" id="dropdownMenu">
-            <div class="dropdown-item-custom">
-              <input type="checkbox" value="John Doe" class="member-checkbox">
-              <span>John Doe</span>
-            </div>
-            <div class="dropdown-item-custom">
-              <input type="checkbox" value="Jane Smith" class="member-checkbox">
-              <span>Jane Smith</span>
-            </div>
-            <div class="dropdown-item-custom">
-              <input type="checkbox" value="Michael Lee" class="member-checkbox">
-              <span>Michael Lee</span>
-            </div>
-            <div class="dropdown-item-custom">
-              <input type="checkbox" value="Sarah Johnson" class="member-checkbox">
-              <span>Sarah Johnson</span>
-            </div>
-            <div class="dropdown-item-custom">
-              <input type="checkbox" value="David Brown" class="member-checkbox">
-              <span>David Brown</span>
-            </div>
-          </div>
+        <input type="time" id="eventTimeTo" class="form-control" required>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- Buttons -->
-  <div class="bottom-buttons">
-    <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-    <button class="btn btn-danger" id="deleteBtn">Delete</button>
-    <button class="btn btn-success" id="saveBtn">Save</button>
-  </div>
+<!-- Send Invitation -->
+<div class="mt-4">
+<label class="fw-bold d-block">Send invitation:</label>
+
+<div class="d-flex align-items-center flex-wrap gap-3">
+<div>
+<input type="checkbox" id="sendAll">
+    <label for="sendAll">Send to all members</label>
+</div>
+
+<div class="d-flex align-items-center">
+<input type="checkbox" id="custom">
+<label for="custom" class="ms-2 me-2">Custom:</label>
+
+<!-- Custom Dropdown Checklist -->
+<div class="custom-dropdown" id="customDropdownContainer" style="display: none;">
+    <div class="dropdown-toggle" id="dropdownToggle">
+        <span id="dropdownText">Select members</span>
+        <span class="selected-count" id="selectedCount"></span>
+    </div>
+    <div class="dropdown-menu-custom" id="dropdownMenu">
+        <div class="dropdown-item-custom">
+            <input type="checkbox" value="John Doe" class="member-checkbox">
+                <span>John Doe</span>
+            </div>
+            <div class="dropdown-item-custom">
+                <input type="checkbox" value="Jane Smith" class="member-checkbox">
+                    <span>Jane Smith</span>
+                </div>
+                <div class="dropdown-item-custom">
+                    <input type="checkbox" value="Michael Lee" class="member-checkbox">
+                        <span>Michael Lee</span>
+                    </div>
+                    <div class="dropdown-item-custom">
+                        <input type="checkbox" value="Sarah Johnson" class="member-checkbox">
+                            <span>Sarah Johnson</span>
+                        </div>
+                        <div class="dropdown-item-custom">
+                            <input type="checkbox" value="David Brown" class="member-checkbox">
+                                <span>David Brown</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="bottom-buttons">
+            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+            <!-- <button class="btn btn-danger" id="deleteBtn">Delete</button> -->
+            <button type="submit" class="btn btn-success" id="saveBtn">Save</button>
+        </div>
+    </form>
 </div>
