@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import router from "./src/routes/index.js";
+import ErrorLog from './src/models/errorLogs.js';
 
 
 // Setup Paths
