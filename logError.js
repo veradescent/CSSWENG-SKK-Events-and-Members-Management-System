@@ -1,6 +1,6 @@
 import ErrorLog from './src/models/errorLogs.js';
 
-async function logError(error, req) {
+export default async function logError(error, req, ErrorLogModel) {
   try {
     console.log("Logging error:", error.message);
     await ErrorLog.create({
@@ -13,7 +13,3 @@ async function logError(error, req) {
     console.error('Failed to log error:', err);
   }
 }
-
-export default logError;
-// put the line below inside "try" to manually test the function logError
-//throw new Error('Test error for logging');
