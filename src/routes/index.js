@@ -4,6 +4,7 @@ import { Router } from "express";
 import memDBRouter from "./memberDatabase.js"
 import createEventRouter from "./createEventRouter.js";
 import editEventRouter from "./editEventRouter.js";
+import authenticationRouter from "./authenticationRouter.js";
 import Event from "../models/eventsModel.js";
 import calenderRouter from "./calendarRouter.js";
 import dayjs from "dayjs";
@@ -68,5 +69,6 @@ router.use(memDBRouter);
 router.use(createEventRouter);
 router.use(editEventRouter);
 router.use(calenderRouter);
+router.use(authenticationRouter);
 
 export default router;
