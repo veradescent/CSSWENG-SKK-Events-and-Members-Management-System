@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import router from "./src/routes/index.js";
 import ErrorLog from './src/models/errorLogs.js';
 
-
 // Setup Paths
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -18,7 +17,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(__dirname + '/public')); // Static Files
-
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 // Handlebars
 app.engine('hbs', handlebars.engine({
     extname: 'hbs',

@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose
 
 const eventSchema = new Schema({
+    image: { 
+        type: String, 
+        default: null 
+    },
     eventName: {
         type: String,
         required: true,

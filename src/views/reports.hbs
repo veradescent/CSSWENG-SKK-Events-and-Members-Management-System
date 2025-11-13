@@ -187,34 +187,43 @@
   </div>
 
   <script>
+  const ctx = document.getElementById("eventChart");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["SKK Assembly", "Church Event"],
+      datasets: [{ label: "No. of Attendees", data: [220, 180], backgroundColor: "#5dbb63" }]
+    },
+    options: { indexAxis: "y", scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+  });
 
-const ctx = document.getElementById("eventChart");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["SKK Assembly", "Church Event"],
-        datasets: [
-          {
-            label: "No. of Attendees",
-            data: [220, 180],
-            backgroundColor: "#5dbb63"
-          }
-        ]
-      },
-      options: {
-        indexAxis: "y",
-        scales: { x: { beginAtZero: true } },
-        plugins: { legend: { display: false } }
-      }
-    });
+  const dayBtn = document.getElementById("dayBtn");
+  const weekBtn = document.getElementById("weekBtn");
+  const monthBtn = document.getElementById("monthBtn");
+  const calendarGrid = document.getElementById("calendarGrid");
+  const calendarBox = document.getElementById("calendarBox");
+  const calendarTitle = document.getElementById("calendarTitle");
 
-    const dayBtn = document.getElementById("dayBtn");
-    const weekBtn = document.getElementById("weekBtn");
-    const monthBtn = document.getElementById("monthBtn");
-    const calendarGrid = document.getElementById("calendarGrid");
-    const calendarBox = document.getElementById("calendarBox");
+  // Use a Date object to keep track of which month is shown
+  let currentDate = new Date(); // default to today
+  // Optionally set to a particular month/year:
+  // currentDate = new Date(2025, 9, 1); // October 2025 (month is 0-based)
 
-    const monthDays = `
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  function renderMonthView(date) {
+    const y = date.getFullYear();
+    const m = date.getMonth(); // 0-based
+    // number of days in month
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    // weekday of first day (0=Sun..6=Sat)
+    const firstWeekday = new Date(y, m, 1).getDay();
+
+    // update title
+    calendarTitle.textContent = `${monthNames[m]} ${y}`;
+
+    // headers (week day labels) — keep them if not already present in DOM
+    const headers = `
       <div class="day-header">SUN</div>
       <div class="day-header">MON</div>
       <div class="day-header">TUE</div>
@@ -222,10 +231,29 @@ const ctx = document.getElementById("eventChart");
       <div class="day-header">THU</div>
       <div class="day-header">FRI</div>
       <div class="day-header">SAT</div>
-      ${[...Array(35)].map((_,i)=>`<div class='calendar-day'>${i+1}</div>`).join("")}
     `;
 
-    const weekDays = `
+    // Build day cells: leading blanks, then 1..daysInMonth
+    let cells = "";
+    // leading blanks
+    for (let i = 0; i < firstWeekday; i++) cells += `<div class="calendar-day" aria-hidden="true"></div>`;
+    // real days
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells += `<div class='calendar-day'>${d}</div>`;
+    }
+    // Optionally append trailing blanks to fill last week row (keeps grid neat)
+    const totalCells = firstWeekday + daysInMonth;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for (let i = 0; i < trailing; i++) cells += `<div class="calendar-day" aria-hidden="true"></div>`;
+
+    calendarGrid.innerHTML = headers + cells;
+  }
+
+  function renderWeekView(date) {
+    // Simple example: render 7 days starting from the Sunday of the current week
+    const copy = new Date(date);
+    const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay())); // Sunday
+    const headers = `
       <div class="day-header">SUN</div>
       <div class="day-header">MON</div>
       <div class="day-header">TUE</div>
@@ -233,38 +261,55 @@ const ctx = document.getElementById("eventChart");
       <div class="day-header">THU</div>
       <div class="day-header">FRI</div>
       <div class="day-header">SAT</div>
-      ${[...Array(7)].map((_,i)=>`<div class='calendar-day'>${i+1}</div>`).join("")}
     `;
+    let cells = "";
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      cells += `<div class="calendar-day">${d.getDate()}</div>`;
+    }
+    calendarGrid.innerHTML = headers + cells;
+    calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+  }
 
-    const dayView = `
-      <div class="day-header" style="grid-column: span 7;">SUNDAY</div>
+  function renderDayView(date) {
+    calendarGrid.innerHTML = `
+      <div class="day-header" style="grid-column: span 7;">${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}</div>
       <div class="calendar-day" style="grid-column: span 7;">Today's Events</div>
     `;
+    calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+  }
 
-    function setActive(btn) {
-      document.querySelectorAll(".calendar-controls button").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-    }
+  function setActive(btn) {
+    document.querySelectorAll(".calendar-controls button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
 
-    dayBtn.onclick = () => {
-      setActive(dayBtn);
-      calendarBox.classList.add("day-view");
-      calendarGrid.innerHTML = dayView;
-    };
+  dayBtn.onclick = () => {
+    setActive(dayBtn);
+    calendarBox.classList.add("day-view");
+    renderDayView(currentDate);
+  };
 
-    weekBtn.onclick = () => {
-      setActive(weekBtn);
-      calendarBox.classList.remove("day-view");
-      calendarGrid.innerHTML = weekDays;
-    };
+  weekBtn.onclick = () => {
+    setActive(weekBtn);
+    calendarBox.classList.remove("day-view");
+    renderWeekView(currentDate);
+  };
 
-    monthBtn.onclick = () => {
-      setActive(monthBtn);
-      calendarBox.classList.remove("day-view");
-      calendarGrid.innerHTML = monthDays;
-    };
+  monthBtn.onclick = () => {
+    setActive(monthBtn);
+    calendarBox.classList.remove("day-view");
+    renderMonthView(currentDate);
+  };
 
-    monthBtn.click();
-  </script>
+  // Optional: allow navigating months (you can wire prev/next buttons)
+  // For example add two buttons and adjust currentDate month then re-render:
+  // currentDate.setMonth(currentDate.getMonth() - 1); renderMonthView(currentDate);
+
+  // initial render (month)
+  monthBtn.click();
+</script>
+
 </body>
 </html>

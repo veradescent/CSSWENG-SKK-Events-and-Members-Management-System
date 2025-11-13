@@ -11,6 +11,10 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import logError from '../../logError.js';
+import eventsApiRouter from "./api/eventsApiRouter.js";
+import participationApiRouter from "./api/participationApiRouter.js";
+import uploadRouter from './api/uploadRouter.js';
+import reportsRouter from './reportsRouter.js';     
 
 const router = Router();
 
@@ -70,5 +74,8 @@ router.use(createEventRouter);
 router.use(editEventRouter);
 router.use(calenderRouter);
 router.use(authenticationRouter);
-
+router.use('/api', eventsApiRouter);
+router.use('/api', participationApiRouter);
+router.use('/api', uploadRouter);
+router.use('/', reportsRouter);
 export default router;
