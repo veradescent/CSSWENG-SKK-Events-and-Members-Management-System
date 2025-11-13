@@ -142,15 +142,19 @@
   <div class="reports-container">
     <!-- Calendar -->
     <div class="calendar-box" id="calendarBox">
-      <div class="calendar-header">
-        <h4 id="calendarTitle">October 2025</h4>
-        <div class="calendar-controls">
-          <button id="dayBtn">Day</button>
-          <button id="weekBtn">Week</button>
-          <button id="monthBtn" class="active">Month</button>
-        </div>
+    <div class="calendar-header">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button id="prevMonthBtn" title="Previous month" class="px-3 py-1 rounded border">‹</button>
+        <h4 id="calendarTitle" style="margin:0 8px;">October 2025</h4>
+        <button id="nextMonthBtn" title="Next month" class="px-3 py-1 rounded border">›</button>
       </div>
 
+      <div class="calendar-controls">
+        <button id="dayBtn">Day</button>
+        <button id="weekBtn">Week</button>
+        <button id="monthBtn" class="active">Month</button>
+      </div>
+    </div>
       <div class="calendar-grid" id="calendarGrid">
         <!-- Headers -->
         <div class="day-header">SUN</div>
@@ -186,130 +190,278 @@
     <p class="text-center mt-3 mb-0 fw-semibold">Total attendees: 400</p>
   </div>
 
-  <script>
-  const ctx = document.getElementById("eventChart");
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["SKK Assembly", "Church Event"],
-      datasets: [{ label: "No. of Attendees", data: [220, 180], backgroundColor: "#5dbb63" }]
-    },
-    options: { indexAxis: "y", scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-  });
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  (async function(){
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarTitle = document.getElementById('calendarTitle');
+    const prevBtn = document.getElementById('prevMonthBtn');
+    const nextBtn = document.getElementById('nextMonthBtn');
+    const dayBtn = document.getElementById('dayBtn');
+    const weekBtn = document.getElementById('weekBtn');
+    const monthBtn = document.getElementById('monthBtn');
+    const calendarBox = document.getElementById('calendarBox');
 
-  const dayBtn = document.getElementById("dayBtn");
-  const weekBtn = document.getElementById("weekBtn");
-  const monthBtn = document.getElementById("monthBtn");
-  const calendarGrid = document.getElementById("calendarGrid");
-  const calendarBox = document.getElementById("calendarBox");
-  const calendarTitle = document.getElementById("calendarTitle");
+    const previewModal = document.getElementById('dayPreviewModal') || null;
+    const previewList = document.getElementById('previewList') || null;
+    const previewDate = document.getElementById('previewDate') || null;
+    const closePreviewBtn = document.getElementById('closePreviewBtn') || null;
 
-  // Use a Date object to keep track of which month is shown
-  let currentDate = new Date(); // default to today
-  // Optionally set to a particular month/year:
-  // currentDate = new Date(2025, 9, 1); // October 2025 (month is 0-based)
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    let currentDate = new Date(); // active date context
+    let currentView = 'month'; // 'month' | 'week' | 'day'
+    let eventsCache = [];
 
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
-  function renderMonthView(date) {
-    const y = date.getFullYear();
-    const m = date.getMonth(); // 0-based
-    // number of days in month
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    // weekday of first day (0=Sun..6=Sat)
-    const firstWeekday = new Date(y, m, 1).getDay();
-
-    // update title
-    calendarTitle.textContent = `${monthNames[m]} ${y}`;
-
-    // headers (week day labels) — keep them if not already present in DOM
-    const headers = `
-      <div class="day-header">SUN</div>
-      <div class="day-header">MON</div>
-      <div class="day-header">TUE</div>
-      <div class="day-header">WED</div>
-      <div class="day-header">THU</div>
-      <div class="day-header">FRI</div>
-      <div class="day-header">SAT</div>
-    `;
-
-    // Build day cells: leading blanks, then 1..daysInMonth
-    let cells = "";
-    // leading blanks
-    for (let i = 0; i < firstWeekday; i++) cells += `<div class="calendar-day" aria-hidden="true"></div>`;
-    // real days
-    for (let d = 1; d <= daysInMonth; d++) {
-      cells += `<div class='calendar-day'>${d}</div>`;
+    function weekdayHeadersHtml() {
+      return `
+        <div class="day-header">SUN</div>
+        <div class="day-header">MON</div>
+        <div class="day-header">TUE</div>
+        <div class="day-header">WED</div>
+        <div class="day-header">THU</div>
+        <div class="day-header">FRI</div>
+        <div class="day-header">SAT</div>
+      `;
     }
-    // Optionally append trailing blanks to fill last week row (keeps grid neat)
-    const totalCells = firstWeekday + daysInMonth;
-    const trailing = (7 - (totalCells % 7)) % 7;
-    for (let i = 0; i < trailing; i++) cells += `<div class="calendar-day" aria-hidden="true"></div>`;
 
-    calendarGrid.innerHTML = headers + cells;
-  }
-
-  function renderWeekView(date) {
-    // Simple example: render 7 days starting from the Sunday of the current week
-    const copy = new Date(date);
-    const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay())); // Sunday
-    const headers = `
-      <div class="day-header">SUN</div>
-      <div class="day-header">MON</div>
-      <div class="day-header">TUE</div>
-      <div class="day-header">WED</div>
-      <div class="day-header">THU</div>
-      <div class="day-header">FRI</div>
-      <div class="day-header">SAT</div>
-    `;
-    let cells = "";
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startOfWeek);
-      d.setDate(startOfWeek.getDate() + i);
-      cells += `<div class="calendar-day">${d.getDate()}</div>`;
+    async function fetchEventsForRange(startISO, endISO) {
+      try {
+        const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
+        const data = await res.json();
+        if (!data.success) return [];
+        return data.events.map(ev => {
+          const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date;
+          return { ...ev, startDate: startStr ? new Date(startStr) : null };
+        });
+      } catch (err) {
+        console.error('Error fetching events', err);
+        return [];
+      }
     }
-    calendarGrid.innerHTML = headers + cells;
-    calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-  }
 
-  function renderDayView(date) {
-    calendarGrid.innerHTML = `
-      <div class="day-header" style="grid-column: span 7;">${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}</div>
-      <div class="calendar-day" style="grid-column: span 7;">Today's Events</div>
-    `;
-    calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-  }
+    // MARK: Renderers
+    function renderMonthView(date) {
+      const y = date.getFullYear(), m = date.getMonth();
+      calendarTitle.textContent = `${monthNames[m]} ${y}`;
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+      const firstWeekday = new Date(y, m, 1).getDay();
 
-  function setActive(btn) {
-    document.querySelectorAll(".calendar-controls button").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-  }
+      let html = weekdayHeadersHtml();
 
-  dayBtn.onclick = () => {
-    setActive(dayBtn);
-    calendarBox.classList.add("day-view");
-    renderDayView(currentDate);
-  };
+      // leading blanks
+      for (let i=0;i<firstWeekday;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
+      // days
+      for (let d=1; d<=daysInMonth; d++) {
+        html += `<div class="calendar-day" data-day="${d}" data-month="${m}" data-year="${y}">${d}</div>`;
+      }
+      // trailing blanks
+      const total = firstWeekday + daysInMonth;
+      const trailing = (7 - (total % 7)) % 7;
+      for (let i=0;i<trailing;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
 
-  weekBtn.onclick = () => {
-    setActive(weekBtn);
-    calendarBox.classList.remove("day-view");
-    renderWeekView(currentDate);
-  };
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(y,m);
+      markEventDays();
+      attachDayClickHandlers();
+    }
 
-  monthBtn.onclick = () => {
-    setActive(monthBtn);
-    calendarBox.classList.remove("day-view");
-    renderMonthView(currentDate);
-  };
+    function renderWeekView(date) {
+      // Find start of week (Sunday)
+      const copy = new Date(date);
+      const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
+      calendarTitle.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
 
-  // Optional: allow navigating months (you can wire prev/next buttons)
-  // For example add two buttons and adjust currentDate month then re-render:
-  // currentDate.setMonth(currentDate.getMonth() - 1); renderMonthView(currentDate);
+      let html = weekdayHeadersHtml();
+      // render 7 day cells showing actual dates
+      for (let i=0;i<7;i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        html += `<div class="calendar-day" data-day="${d.getDate()}" data-month="${d.getMonth()}" data-year="${d.getFullYear()}">${d.getDate()}</div>`;
+      }
 
-  // initial render (month)
-  monthBtn.click();
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(startOfWeek.getFullYear(), startOfWeek.getMonth());
+      markEventDays();
+      attachDayClickHandlers();
+    }
+
+    function renderDayView(date) {
+      calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+      // Day view: show header row and one large day cell spanning grid columns (we'll still keep grid)
+      let html = weekdayHeadersHtml();
+      html += `<div class="calendar-day" style="grid-column: 1 / -1; min-height: 160px;" data-day="${date.getDate()}" data-month="${date.getMonth()}" data-year="${date.getFullYear()}">${date.getDate()}</div>`;
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(date.getFullYear(), date.getMonth());
+      markEventDays();
+      attachDayClickHandlers();
+    }
+
+    function highlightTodayIfNeeded(y, m) {
+      const today = new Date();
+      calendarGrid.querySelectorAll('.calendar-day').forEach(el=>el.classList.remove('today'));
+      if (today.getFullYear() === y && today.getMonth() === m) {
+        const sel = `.calendar-day[data-day="${today.getDate()}"][data-month="${today.getMonth()}"][data-year="${today.getFullYear()}"]`;
+        const todayCell = calendarGrid.querySelector(sel);
+        if (todayCell) todayCell.classList.add('today');
+      }
+    }
+
+    // mark event days using eventsCache
+    function markEventDays() {
+      const dayMap = new Map();
+      for (const ev of eventsCache) {
+        if (!ev.startDate) continue;
+        const key = `${ev.startDate.getFullYear()}-${ev.startDate.getMonth()}-${ev.startDate.getDate()}`;
+        if (!dayMap.has(key)) dayMap.set(key, []);
+        dayMap.get(key).push(ev);
+      }
+      calendarGrid.querySelectorAll('.calendar-day').forEach(cell => {
+        if (cell.classList.contains('empty')) return;
+        const y = Number(cell.dataset.year), m = Number(cell.dataset.month), d = Number(cell.dataset.day);
+        const key = `${y}-${m}-${d}`;
+        const evs = dayMap.get(key) || [];
+        if (evs.length) {
+          cell.classList.add('has-event');
+          cell.dataset.events = JSON.stringify(evs.map(e => ({ id: e.id, title: e.title, time: e.startDate ? e.startDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '' })));
+        } else {
+          cell.classList.remove('has-event');
+          cell.dataset.events = '';
+        }
+      });
+    }
+
+    function attachDayClickHandlers() {
+      calendarGrid.querySelectorAll('.calendar-day').forEach(cell=>{
+        if (cell.classList.contains('empty')) return;
+        cell.onclick = () => {
+          const evs = cell.dataset.events ? JSON.parse(cell.dataset.events) : [];
+          showPreview(cell, evs);
+        };
+      });
+    }
+
+    function showPreview(cell, evs) {
+      if (!previewModal || !previewList || !previewDate) {
+        // fallback
+        if (!evs || evs.length === 0) return alert('No events for this day.');
+        return alert(evs.map(e=>`${e.time} ${e.title}`).join('\n'));
+      }
+      const y = cell.dataset.year, m = Number(cell.dataset.month), d = cell.dataset.day;
+      previewDate.textContent = `${monthNames[m]} ${d}, ${y}`;
+      previewList.innerHTML = '';
+      if (!evs || evs.length === 0) previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
+      else {
+        evs.forEach(e => {
+          const el = document.createElement('div');
+          el.className = 'event-card';
+          el.innerHTML = `<div><small>${e.time}</small></div><div style="font-weight:600">${e.title}</div>`;
+          previewList.appendChild(el);
+        });
+      }
+      previewModal.classList.remove('hidden');
+    }
+
+    if (closePreviewBtn) {
+      closePreviewBtn.onclick = () => previewModal.classList.add('hidden');
+      previewModal.addEventListener('click', (ev) => { if (ev.target === previewModal) previewModal.classList.add('hidden'); });
+    }
+
+    // Navigation behavior changes depending on currentView
+    prevBtn && (prevBtn.onclick = async () => {
+      if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() - 1);
+      else if (currentView === 'week') currentDate.setDate(currentDate.getDate() - 7);
+      else currentDate.setDate(currentDate.getDate() - 1);
+      await loadForCurrentView();
+    });
+    nextBtn && (nextBtn.onclick = async () => {
+      if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() + 1);
+      else if (currentView === 'week') currentDate.setDate(currentDate.getDate() + 7);
+      else currentDate.setDate(currentDate.getDate() + 1);
+      await loadForCurrentView();
+    });
+
+    function setActiveView(view) {
+      currentView = view;
+      document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
+      if (view === 'month') monthBtn.classList.add('active');
+      if (view === 'week') weekBtn.classList.add('active');
+      if (view === 'day') dayBtn.classList.add('active');
+    }
+
+    // wire view toggle buttons
+    dayBtn && (dayBtn.onclick = async () => { setActiveView('day'); await loadForCurrentView(); calendarBox.classList.add('day-view'); });
+    weekBtn && (weekBtn.onclick = async () => { setActiveView('week'); await loadForCurrentView(); calendarBox.classList.remove('day-view'); });
+    monthBtn && (monthBtn.onclick = async () => { setActiveView('month'); await loadForCurrentView(); calendarBox.classList.remove('day-view'); });
+
+    // load events for the relevant range depending on view
+    async function loadForCurrentView() {
+      if (currentView === 'month') {
+        const y = currentDate.getFullYear(), m = currentDate.getMonth();
+        const start = `${y}-${String(m+1).padStart(2,'0')}-01`;
+        const last = new Date(y, m+1, 0).getDate();
+        const end = `${y}-${String(m+1).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
+        eventsCache = await fetchEventsForRange(start, end);
+        renderMonthView(currentDate);
+      } else if (currentView === 'week') {
+        // fetch month-range large enough to cover week (simple: fetch 1 week window)
+        const copy = new Date(currentDate);
+        const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
+        const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
+        eventsCache = await fetchEventsForRange(startOfWeek.toISOString().slice(0,10), endOfWeek.toISOString().slice(0,10));
+        renderWeekView(currentDate);
+      } else { // day
+        const d = currentDate;
+        const iso = d.toISOString().slice(0,10);
+        eventsCache = await fetchEventsForRange(iso, iso);
+        renderDayView(currentDate);
+      }
+    }
+
+    // initial
+    setActiveView('month');
+    await loadForCurrentView();
+
+    // expose refresh
+    window.refreshReportsCalendar = async () => { await loadForCurrentView(); };
+
+  })();
+}); // DOMContentLoaded
 </script>
+
+
+
+<!-- Event Preview Modal -->
+<div id="dayPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-4 max-w-lg w-full mx-4 shadow-lg">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h3 id="previewDate" class="text-lg font-semibold">Date</h3>
+      <button id="closePreviewBtn" class="text-gray-600">Close</button>
+    </div>
+    <div id="previewList">
+      <!-- events will be injected here -->
+    </div>
+  </div>
+</div>
+
+<style>
+  /* day with events */
+  .calendar-day.has-event {
+    background: #b4e4b4;
+    border: 1px solid #3a813a;
+    color: #133b1c;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .calendar-day.empty {
+    background: transparent;
+    box-shadow: none;
+  }
+  .calendar-day.today {
+    box-shadow: 0 0 0 2px rgba(93,187,99,0.25) inset;
+  }
+  /* modal utility */
+  .hidden { display: none; }
+</style>
 
 </body>
 </html>
