@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import logError from '../../../logError.js';
-
+import { requireAdmin } from '../../middleware/authMiddleware.js';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -159,7 +159,7 @@ router.put('/events/:id', async (req, res) => {
 /**
  * DELETE /api/events/:id
  */
-router.delete('/events/:id', async (req, res) => {
+router.delete('/events/:id', requireAdmin, async (req, res) => {
   try {
     const removed = await Event.findByIdAndDelete(req.params.id);
     if (!removed) return res.status(404).json({ success: false, message: 'Event not found' });

@@ -6,7 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import router from "./src/routes/index.js";
 import ErrorLog from './src/models/errorLogs.js';
-
+import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';   // ✅ add this
+import previousEventsRouter from './src/routes/api/previousEventsRouter.js';
 // Setup Paths
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -16,8 +18,33 @@ const app = express();
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(__dirname + '/public')); // Static Files
+app.use(cookieParser());
+app.use(express.static(__dirname + '/public'));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+app.use('/api/events/previous', previousEventsRouter);
+
+// MIDDLEWARE (USER CONDITIONS)
+const TOKEN_NAME = 'auth_token';
+const JWT_SECRET = process.env.JWT_SECRET || 'replace_with_a_strong_secret';
+
+app.use((req, res, next) => {
+  const token = req.cookies?.[TOKEN_NAME];
+
+  if (!token) {
+    res.locals.user = null;
+    return next();
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    res.locals.user = payload;        // user is now available in ALL .hbs templates
+  } catch (err) {
+    res.locals.user = null;
+  }
+
+  next();
+});
+
 // Handlebars
 app.engine('hbs', handlebars.engine({
     extname: 'hbs',
@@ -33,7 +60,6 @@ app.set('views', './src/views/')
 
 async function main() {
     try {
-        // Connect to MongoDB
         mongoose.set('strictQuery', true);
         await mongoose.connect(process.env.MONGODB_URI)
             .then(() => console.log("MongoDB connected"))
@@ -41,7 +67,6 @@ async function main() {
 
         app.use('/', router);
 
-        // Start app
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     } catch (error) {
@@ -50,4 +75,3 @@ async function main() {
 }
 
 main();
-

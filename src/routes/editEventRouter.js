@@ -4,18 +4,19 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import logError from '../../logError.js';
+import { requireAdmin } from '../middleware/authMiddleware.js';
 
 const editEventRouter = Router();
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-editEventRouter.get('/editEvent', async (req, res) => {
+editEventRouter.get('/editEvent', requireAdmin, async (req, res) => {
     res.render('editEvent', {
         title: "Edit Event",
     })
 })
 
-editEventRouter.get('/editEvent/:id', async (req, res) => {
+editEventRouter.get('/editEvent/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const event = await Event.findById(id).lean();
@@ -42,7 +43,7 @@ editEventRouter.get('/editEvent/:id', async (req, res) => {
     }
 });
 
-editEventRouter.delete('/editEvent/:id', async (req, res) => {
+editEventRouter.delete('/editEvent/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const deleted = await Event.findByIdAndDelete(id);
@@ -57,7 +58,7 @@ editEventRouter.delete('/editEvent/:id', async (req, res) => {
     }
 });
 
-editEventRouter.put('/editEvent/:id', async (req, res) => {
+editEventRouter.put('/editEvent/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, attendees, type, date, timeFrom, timeTo } = req.body;

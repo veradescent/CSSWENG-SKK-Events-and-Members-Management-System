@@ -132,7 +132,106 @@
       padding: 25px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       margin: 0 auto 60px;
+      height: 320px; /* gives Chart.js room to render */
     }
+
+    /* small responsive tweak so canvas fills container */
+    #eventChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+      /* modal event card */
+    #dayPreviewModal .event-card {
+      background: #fff;
+      border-left: 4px solid #5dbb63;
+      padding: 10px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    #dayPreviewModal .event-card small { color: #6b7280; }
+    #dayPreviewModal .hidden { display: none; }
+
+    /* modal overlay & card */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-card {
+  background: #f3f3f3;
+  width: 920px;
+  max-width: calc(100% - 40px);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px;
+  background:#efefef;
+  border-bottom:1px solid #e0e0e0;
+}
+
+.modal-title { margin:0; font-size:1.25rem; font-weight:700; }
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-weight:600;
+  cursor:pointer;
+  padding:6px 10px;
+}
+
+/* body containing stacked event cards */
+.modal-body {
+  max-height: 60vh;
+  overflow:auto;
+  padding: 18px;
+  background: #fafafa;
+}
+
+/* single event card styled like your Edit Event form */
+.preview-event-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+
+.preview-row { display:flex; gap:12px; align-items:center; margin-top:8px; }
+.preview-row .col { flex:1; }
+
+.preview-label { font-size:0.85rem; color:#374151; margin-bottom:6px; display:block; }
+.preview-input {
+  width:100%;
+  padding:8px 10px;
+  border-radius:4px;
+  border:1px solid #d1d5db;
+  background:#f8f8f8;
+  color:#111827;
+}
+
+/* controls footer */
+.modal-footer {
+  padding:14px 20px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  background:#fff;
+  border-top:1px solid #eee;
+}
+
   </style>
 </head>
 
@@ -142,21 +241,22 @@
   <div class="reports-container">
     <!-- Calendar -->
     <div class="calendar-box" id="calendarBox">
-    <div class="calendar-header">
-      <div style="display:flex; gap:12px; align-items:center;">
-        <button id="prevMonthBtn" title="Previous month" class="px-3 py-1 rounded border">‹</button>
-        <h4 id="calendarTitle" style="margin:0 8px;">October 2025</h4>
-        <button id="nextMonthBtn" title="Next month" class="px-3 py-1 rounded border">›</button>
+      <div class="calendar-header">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <button id="prevMonthBtn" title="Previous month" class="px-3 py-1 rounded border">‹</button>
+          <h4 id="calendarTitle" style="margin:0 8px;">October 2025</h4>
+          <button id="nextMonthBtn" title="Next month" class="px-3 py-1 rounded border">›</button>
+        </div>
+
+        <div class="calendar-controls">
+          <button id="dayBtn">Day</button>
+          <button id="weekBtn">Week</button>
+          <button id="monthBtn" class="active">Month</button>
+        </div>
       </div>
 
-      <div class="calendar-controls">
-        <button id="dayBtn">Day</button>
-        <button id="weekBtn">Week</button>
-        <button id="monthBtn" class="active">Month</button>
-      </div>
-    </div>
       <div class="calendar-grid" id="calendarGrid">
-        <!-- Headers -->
+        <!-- Headers (script will ensure proper headers are present) -->
         <div class="day-header">SUN</div>
         <div class="day-header">MON</div>
         <div class="day-header">TUE</div>
@@ -167,32 +267,49 @@
       </div>
     </div>
 
-    <!-- Previous Events -->
-    <div class="previous-events">
-      <h5>Previous events</h5>
-      <div class="event-card">
-        <small>October 15, 2025 | 9:00 AM – 2:00 PM</small>
-        <strong>SKK General Assembly</strong>
-        <small>LOCATION: Quezon City</small>
-      </div>
-      <div class="event-card">
-        <small>October 19, 2025 | 1:00 PM – 3:00 PM</small>
-        <strong>Church Event</strong>
-        <small>LOCATION: Quezon City</small>
-      </div>
-    </div>
+<!-- Right column: Previous events -->
+<div class="previous-events">
+  <h5>Previous events</h5>
+
+  {{#each previousEvents}}
+  <div class="event-card prev-event-item"
+       role="button"
+       tabindex="0"
+       data-id="{{_id}}"
+       data-title="{{title}}"
+       data-desc="{{eventDescription}}"
+       data-location="{{location}}"
+       data-start="{{startDateTime}}"        <!-- ISO expected -->
+       data-end="{{endDateTime}}"
+       data-attendees="{{expectedAttendees}}"
+       data-type="{{type}}">
+    <small>{{displayDate}} | {{displayStartTime}} – {{displayEndTime}}</small>
+    <div style="font-weight:700">{{title}}</div>
+    <small>LOCATION: {{location}}</small>
   </div>
+  {{/each}}
+
+  <!-- Admin only: add previous event -->
+  {{#if (eq user.role 'admin')}}
+    <div style="margin-top:12px; text-align:center;">
+      <button id="addPrevBtn" class="btn btn-success btn-sm">Add Previous Event</button>
+    </div>
+  {{/if}}
+</div>
 
   <button class="view-btn">View Statistics</button>
 
   <div class="chart-container">
     <canvas id="eventChart"></canvas>
-    <p class="text-center mt-3 mb-0 fw-semibold">Total attendees: 400</p>
+    <p id="totalAttendeesText" class="text-center mt-3 mb-0 fw-semibold">
+      Total attendees: 0
+    </p>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   (async function(){
+    // ===== DOM refs =====
     const calendarGrid = document.getElementById('calendarGrid');
     const calendarTitle = document.getElementById('calendarTitle');
     const prevBtn = document.getElementById('prevMonthBtn');
@@ -207,11 +324,111 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewDate = document.getElementById('previewDate') || null;
     const closePreviewBtn = document.getElementById('closePreviewBtn') || null;
 
+    const chartCanvas = document.getElementById('eventChart');
+
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     let currentDate = new Date(); // active date context
     let currentView = 'month'; // 'month' | 'week' | 'day'
     let eventsCache = [];
+    // simple DOM-safe text escaper
+    function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+    }
+    // ===== Chart.js: create and updater =====
+    let eventChart = null;
+    function createEmptyChart() {
+      if (!chartCanvas) return null;
+      const ctx = chartCanvas.getContext('2d');
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'No. of Attendees',
+            data: []
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+    function updateStatsFromEvents(events) {
+      if (!eventChart) return;
+      // Aggregate by title (fallback to 1 per event if no attendee count)
+      const map = new Map();
+      for (const ev of events || []) {
+        const key = ev.title || ev.eventName || 'Untitled';
+        const count = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? 1);
+        map.set(key, (map.get(key) || 0) + (isNaN(count) ? 1 : count));
+      }
+      const labels = Array.from(map.keys());
+      const data = labels.map(l => map.get(l));
+      eventChart.data.labels = labels;
+      eventChart.data.datasets[0].data = data;
+      eventChart.update();
+      const totalAttendees = (events || []).reduce((sum, ev) => {
+      const count = Number(
+        ev.expectedAttendees ??
+        ev.attendees ??
+        ev.attendeeCount ??
+        ev.noOfAttendees ??
+        0
+      );
+      return sum + (isNaN(count) ? 0 : count);
+    }, 0);
 
+    const totalTextEl = document.getElementById('totalAttendeesText');
+    if (totalTextEl) {
+      totalTextEl.textContent = `Total attendees: ${totalAttendees}`;
+    }
+    }
+    // create chart instance once
+    eventChart = createEmptyChart();
+
+    // ===== View Statistics button =====
+    const viewBtn = document.querySelector('.view-btn');
+    const chartContainerEl = document.querySelector('.chart-container');
+
+    // start hidden
+    if (chartContainerEl) chartContainerEl.style.display = 'none';
+    if (viewBtn) viewBtn.textContent = 'View Statistics';
+
+    // toggle handler
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => {
+        if (!chartContainerEl) return;
+        const isHidden = chartContainerEl.style.display === 'none' || getComputedStyle(chartContainerEl).display === 'none';
+
+        if (isHidden) {
+          // show
+          chartContainerEl.style.display = '';            // restores default (block)
+          viewBtn.textContent = 'Hide Statistics';
+          // ensure chart resizes / renders
+          if (eventChart) {
+            try { eventChart.resize(); } catch(e) { /* ignore */ }
+            try { eventChart.update(); } catch(e) { /* ignore */ }
+          }
+        } else {
+          // hide
+          chartContainerEl.style.display = 'none';
+          viewBtn.textContent = 'View Statistics';
+        }
+        // keep focus behavior nice
+        viewBtn.blur();
+      });
+    }
+    // ===== helpers & fetch =====
     function weekdayHeadersHtml() {
       return `
         <div class="day-header">SUN</div>
@@ -224,22 +441,35 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    async function fetchEventsForRange(startISO, endISO) {
-      try {
-        const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
-        const data = await res.json();
-        if (!data.success) return [];
-        return data.events.map(ev => {
-          const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date;
-          return { ...ev, startDate: startStr ? new Date(startStr) : null };
-        });
-      } catch (err) {
-        console.error('Error fetching events', err);
-        return [];
-      }
-    }
+      async function fetchEventsForRange(startISO, endISO) {
+        try {
+          const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
+          const data = await res.json();
+          if (!data.success) return [];
+          return data.events.map(ev => {
+            const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date || ev.datetime || ev.startDate;
+            const endStr = ev.end || ev.endUTC || ev.endDateTime || ev.endDate || ev.finish;
+            const title = ev.title || ev.eventName || ev.name || ev.summary || 'Untitled';
+            const description = ev.description || ev.details || ev.eventDescription || '';
+            const location = ev.location || ev.venue || ev.place || ev.locationName || '';
+            const attendees = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
+            const type = ev.type || ev.eventType || ev.category || '';
+            const id = ev._id || ev.id || ev.eventId || null;
 
-    // MARK: Renderers
+            const startDate = startStr ? new Date(startStr) : null;
+            const endDate = endStr ? new Date(endStr) : null;
+
+            return { ...ev, id, title, description, location, attendees, type, startDate, endDate };
+          });
+        } catch (err) {
+          console.error('Error fetching events', err);
+          return [];
+        }
+      }
+
+
+
+    // ===== renderers (month/week/day) =====
     function renderMonthView(date) {
       const y = date.getFullYear(), m = date.getMonth();
       calendarTitle.textContent = `${monthNames[m]} ${y}`;
@@ -247,14 +477,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const firstWeekday = new Date(y, m, 1).getDay();
 
       let html = weekdayHeadersHtml();
-
-      // leading blanks
       for (let i=0;i<firstWeekday;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
-      // days
       for (let d=1; d<=daysInMonth; d++) {
         html += `<div class="calendar-day" data-day="${d}" data-month="${m}" data-year="${y}">${d}</div>`;
       }
-      // trailing blanks
       const total = firstWeekday + daysInMonth;
       const trailing = (7 - (total % 7)) % 7;
       for (let i=0;i<trailing;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
@@ -266,13 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderWeekView(date) {
-      // Find start of week (Sunday)
       const copy = new Date(date);
       const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
       calendarTitle.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
 
       let html = weekdayHeadersHtml();
-      // render 7 day cells showing actual dates
       for (let i=0;i<7;i++) {
         const d = new Date(startOfWeek);
         d.setDate(startOfWeek.getDate() + i);
@@ -287,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderDayView(date) {
       calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-      // Day view: show header row and one large day cell spanning grid columns (we'll still keep grid)
       let html = weekdayHeadersHtml();
       html += `<div class="calendar-day" style="grid-column: 1 / -1; min-height: 160px;" data-day="${date.getDate()}" data-month="${date.getMonth()}" data-year="${date.getFullYear()}">${date.getDate()}</div>`;
       calendarGrid.innerHTML = html;
@@ -306,7 +529,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // mark event days using eventsCache
     function markEventDays() {
       const dayMap = new Map();
       for (const ev of eventsCache) {
@@ -322,7 +544,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const evs = dayMap.get(key) || [];
         if (evs.length) {
           cell.classList.add('has-event');
-          cell.dataset.events = JSON.stringify(evs.map(e => ({ id: e.id, title: e.title, time: e.startDate ? e.startDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '' })));
+          // store richer event objects (title, time, description, location, id)
+          const normalized = evs.map(e => ({
+            id: e.id,
+            title: e.title || '',
+            description: e.description || '',
+            location: e.location || '',
+            attendees: Number(e.attendees ?? e.expectedAttendees ?? 0) || 0,
+            type: e.type || e.eventType || '',
+            // store ISO strings so JSON.parse gives date strings we can turn into Date objects later
+            startDateISO: e.startDate ? e.startDate.toISOString() : null,
+            endDateISO: e.endDate ? e.endDate.toISOString() : null
+          }));
+          cell.dataset.events = JSON.stringify(normalized);
         } else {
           cell.classList.remove('has-event');
           cell.dataset.events = '';
@@ -339,32 +573,127 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       });
     }
+    // Make previous events clickable (reports page)
+    document.querySelectorAll('.prev-event-item').forEach(el => {
+      el.addEventListener('click', () => openPrevEventFromEl(el));
+      el.addEventListener('keypress', (e) => { if (e.key === 'Enter' || e.key === ' ') openPrevEventFromEl(el); });
+    });
+
+    function openPrevEventFromEl(el) {
+      // read attributes (strings)
+      const ev = {
+        id: el.dataset.id || null,
+        title: el.dataset.title || el.querySelector('div')?.textContent || 'Untitled',
+        description: el.dataset.desc || '',
+        location: el.dataset.location || '',
+        attendees: Number(el.dataset.attendees || 0),
+        type: el.dataset.type || '',
+        // store ISO strings consistent with how showPreview expects startDateISO/endDateISO
+        startDateISO: el.dataset.start || null,
+        endDateISO: el.dataset.end || null
+      };
+
+      // show preview using the same modal function (expects an array of events)
+      showPreview({ dataset: { year: '', month: '', day: '' } }, [ev]);
+      // Note: showPreview reads the cell for date text to display the modal header.
+      // We can set the previewDate header manually if available:
+      const start = ev.startDateISO ? new Date(ev.startDateISO) : null;
+      if (start && previewDate) previewDate.textContent = start.toLocaleDateString();
+    }
 
     function showPreview(cell, evs) {
-      if (!previewModal || !previewList || !previewDate) {
-        // fallback
-        if (!evs || evs.length === 0) return alert('No events for this day.');
-        return alert(evs.map(e=>`${e.time} ${e.title}`).join('\n'));
-      }
-      const y = cell.dataset.year, m = Number(cell.dataset.month), d = cell.dataset.day;
-      previewDate.textContent = `${monthNames[m]} ${d}, ${y}`;
-      previewList.innerHTML = '';
-      if (!evs || evs.length === 0) previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
-      else {
-        evs.forEach(e => {
-          const el = document.createElement('div');
-          el.className = 'event-card';
-          el.innerHTML = `<div><small>${e.time}</small></div><div style="font-weight:600">${e.title}</div>`;
-          previewList.appendChild(el);
-        });
-      }
-      previewModal.classList.remove('hidden');
-    }
+  if (!previewModal || !previewList || !previewDate) {
+    if (!evs || evs.length === 0) return alert('No events for this day.');
+    return alert(evs.map(e => `${e.time} ${e.title}\n${e.description || ''}\nLocation: ${e.location || 'TBA'}`).join('\n\n'));
+  }
 
-    if (closePreviewBtn) {
-      closePreviewBtn.onclick = () => previewModal.classList.add('hidden');
-      previewModal.addEventListener('click', (ev) => { if (ev.target === previewModal) previewModal.classList.add('hidden'); });
-    }
+  const y = cell.dataset.year, m = Number(cell.dataset.month), d = cell.dataset.day;
+  previewDate.textContent = `${monthNames[m]} ${d}, ${y}`;
+  previewList.innerHTML = '';
+
+  if (!evs || evs.length === 0) {
+    previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
+  } else {
+    evs.forEach(e => {
+      const card = document.createElement('div');
+      card.className = 'preview-event-card';
+
+      // format date/time strings
+      const start = e.startDateISO ? new Date(e.startDateISO) : null;
+      const end = e.endDateISO ? new Date(e.endDateISO) : null;
+
+      const dateStr = start ? start.toLocaleDateString() : (end ? end.toLocaleDateString() : '');
+      const timeFrom = start ? start.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+      const timeTo = end ? end.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+      const attendeesStr = e.attendees ? String(e.attendees) : '';
+      const typeStr = e.type || '';
+      card.innerHTML = `
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="flex:1">
+          <label class="preview-label">Title</label>
+          <div class="preview-input">${escapeHtml(e.title || '')}</div>
+        </div>
+      </div>
+
+      <div class="preview-row">
+        <div class="col">
+          <label class="preview-label">Description</label>
+          <div class="preview-input" style="min-height:60px; white-space:pre-wrap;">
+            ${escapeHtml(e.description || '')}
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-row" style="margin-top:12px">
+        <div class="col">
+          <label class="preview-label">Location</label>
+          <div class="preview-input">${escapeHtml(e.location || '')}</div>
+        </div>
+        <div style="width:160px">
+          <label class="preview-label">No. of Attendees</label>
+          <div class="preview-input">${escapeHtml(String(e.attendees || ''))}</div>
+        </div>
+      </div>
+
+      <div class="preview-row" style="margin-top:12px">
+        <div style="width:220px">
+          <label class="preview-label">Date</label>
+          <div class="preview-input">${escapeHtml(dateStr)}</div>
+        </div>
+        <div style="width:140px">
+          <label class="preview-label">Time From</label>
+          <div class="preview-input">${escapeHtml(timeFrom)}</div>
+        </div>
+        <div style="width:140px">
+          <label class="preview-label">Time To</label>
+          <div class="preview-input">${escapeHtml(timeTo)}</div>
+        </div>
+        <div style="width:140px">
+          <label class="preview-label">Type</label>
+          <div class="preview-input">${escapeHtml(e.type || '')}</div>
+        </div>
+      </div>
+    `;
+
+
+      previewList.appendChild(card);
+    });
+  }
+
+  previewModal.classList.remove('hidden');
+}
+
+
+// === Close buttons for popup ===
+closePreviewBtn && (closePreviewBtn.onclick = () => previewModal.classList.add('hidden'));
+
+document.getElementById('modalCloseFooter') &&
+(document.getElementById('modalCloseFooter').onclick = () => previewModal.classList.add('hidden'));
+
+previewModal && previewModal.addEventListener('click', (ev) => { 
+  if (ev.target === previewModal) previewModal.classList.add('hidden'); 
+});
+
 
     // Navigation behavior changes depending on currentView
     prevBtn && (prevBtn.onclick = async () => {
@@ -401,22 +730,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const last = new Date(y, m+1, 0).getDate();
         const end = `${y}-${String(m+1).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
         eventsCache = await fetchEventsForRange(start, end);
+        updateStatsFromEvents(eventsCache);
         renderMonthView(currentDate);
       } else if (currentView === 'week') {
-        // fetch month-range large enough to cover week (simple: fetch 1 week window)
         const copy = new Date(currentDate);
         const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
         const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
         eventsCache = await fetchEventsForRange(startOfWeek.toISOString().slice(0,10), endOfWeek.toISOString().slice(0,10));
+        updateStatsFromEvents(eventsCache);
         renderWeekView(currentDate);
       } else { // day
         const d = currentDate;
         const iso = d.toISOString().slice(0,10);
         eventsCache = await fetchEventsForRange(iso, iso);
+        updateStatsFromEvents(eventsCache);
         renderDayView(currentDate);
       }
     }
-
     // initial
     setActiveView('month');
     await loadForCurrentView();
@@ -424,24 +754,69 @@ document.addEventListener('DOMContentLoaded', () => {
     // expose refresh
     window.refreshReportsCalendar = async () => { await loadForCurrentView(); };
 
-  })();
-}); // DOMContentLoaded
+    // --- Add Previous Event wiring (INSIDE the DOMContentLoaded IIFE) ---
+    const addPrevBtn = document.getElementById('addPrevBtn');
+    const addPrevModal = document.getElementById('addPrevModal');
+    const closeAddPrevBtn = document.getElementById('closeAddPrevBtn');
+    const cancelAddPrev = document.getElementById('cancelAddPrev');
+    const addPrevForm = document.getElementById('addPrevForm');
+
+    if (addPrevBtn) {
+      addPrevBtn.addEventListener('click', () => {
+        if (!addPrevModal || !addPrevForm) return;
+        const dateInput = addPrevForm.querySelector('input[name="date"]');
+        if (dateInput) dateInput.max = new Date().toISOString().slice(0,10);
+        addPrevModal.classList.remove('hidden');
+      });
+    }
+    if (closeAddPrevBtn) closeAddPrevBtn.onclick = () => addPrevModal.classList.add('hidden');
+    if (cancelAddPrev) cancelAddPrev.onclick = () => addPrevModal.classList.add('hidden');
+
+    if (addPrevForm) {
+      addPrevForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(addPrevForm);
+        const date = fd.get('date');
+        const timeFrom = fd.get('timeFrom') || '';
+        const timeTo = fd.get('timeTo') || '';
+        const startISO = date ? (date + (timeFrom ? 'T' + timeFrom : 'T00:00')) : null;
+        const endISO   = date ? (date + (timeTo ? 'T' + timeTo : 'T23:59')) : null;
+        const payload = {
+          title: fd.get('title'),
+          eventDescription: fd.get('description'),
+          location: fd.get('location'),
+          startDateTime: startISO,
+          endDateTime: endISO,
+          expectedAttendees: Number(fd.get('attendees') || 0),
+          type: ''
+        };
+
+        if (startISO && new Date(startISO) >= new Date()) {
+          return alert('Previous event date/time must be before now.');
+        }
+
+        try {
+          const res = await fetch('/api/events/previous', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!data.success) return alert(data.message || 'Failed to add previous event');
+          addPrevModal.classList.add('hidden');
+          location.reload();
+        } catch (err) {
+          console.error(err);
+          alert('Server error while adding previous event');
+        }
+      });
+    }
+
+  })(); // end inner async IIFE
+});     // end DOMContentLoaded
 </script>
 
 
-
-<!-- Event Preview Modal -->
-<div id="dayPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg p-4 max-w-lg w-full mx-4 shadow-lg">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <h3 id="previewDate" class="text-lg font-semibold">Date</h3>
-      <button id="closePreviewBtn" class="text-gray-600">Close</button>
-    </div>
-    <div id="previewList">
-      <!-- events will be injected here -->
-    </div>
-  </div>
-</div>
 
 <style>
   /* day with events */
@@ -462,6 +837,75 @@ document.addEventListener('DOMContentLoaded', () => {
   /* modal utility */
   .hidden { display: none; }
 </style>
+<!-- Event Preview Modal (Edit-style read-only cards) -->
+<div id="dayPreviewModal" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="previewDate" class="modal-title">Date</h3>
+      <button id="closePreviewBtn" class="btn-close"></button>
+    </div>
+
+    <div id="previewList" class="modal-body">
+      <!-- event detail cards will be injected here -->
+    </div>
+
+    <div class="modal-footer">
+      <button id="modalCloseFooter" class="btn btn-secondary">Close</button>
+    </div>
+  </div>
+</div>
+<!-- Add Previous Event Modal (admin only) -->
+<div id="addPrevModal" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Previous Event</h3>
+      <button id="closeAddPrevBtn" class="btn-close" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="addPrevForm">
+        <div class="mb-2">
+          <label class="preview-label">Title</label>
+          <input name="title" class="preview-input" required />
+        </div>
+
+        <div class="mb-2">
+          <label class="preview-label">Description</label>
+          <textarea name="description" class="preview-input" style="min-height:90px"></textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="preview-label">Location</label>
+          <input name="location" class="preview-input" />
+        </div>
+
+        <div class="preview-row" style="gap:8px; margin-top:8px">
+          <div style="flex:1">
+            <label class="preview-label">Date</label>
+            <input type="date" name="date" class="preview-input" required />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">Time From</label>
+            <input type="time" name="timeFrom" class="preview-input" />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">Time To</label>
+            <input type="time" name="timeTo" class="preview-input" />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">No. Attendees</label>
+            <input type="number" name="attendees" class="preview-input" min="0" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end">
+          <button type="button" id="cancelAddPrev" class="btn btn-secondary btn-sm">Cancel</button>
+          <button type="submit" class="btn btn-success btn-sm">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

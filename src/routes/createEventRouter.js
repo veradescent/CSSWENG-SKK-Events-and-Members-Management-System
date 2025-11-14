@@ -5,13 +5,14 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import logError from '../../logError.js';
+import { requireAdmin } from '../middleware/authMiddleware.js';
 
 
 const createEventRouter = Router();
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-createEventRouter.get('/createEvent', async (req, res) => {
+createEventRouter.get('/createEvent', requireAdmin, async (req, res) => {
     try {
         // const now = dayjs();
         // const tz = "Asia/Manila";
@@ -32,7 +33,7 @@ createEventRouter.get('/createEvent', async (req, res) => {
     }
 })
 
-createEventRouter.post('/addEvent', async (req, res) => {
+createEventRouter.post('/addEvent', requireAdmin, async (req, res) => {
 
     // TODO: add attendees handling by linking the attendees' ids in participationModel and event id
     // time data received from user is in UTC+8

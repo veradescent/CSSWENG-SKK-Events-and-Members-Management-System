@@ -14,50 +14,41 @@
     </div>
 
     <!-- upcoming events -->
-    <div class="mt-3">
-        <div>
-            <h2 class="fw-bold display-6">Upcoming Events</h2>
-        </div>
-        
-        <div class="position-relative" style="padding: 0 50px;">
-            <button class="carousel-arrow carousel-arrow-left" id="carouselLeft" type="button">
-                &#8249;
-            </button>
-            
-            <div class="events-carousel-container mt-3">
-                <div style="overflow: hidden;">
-                    <div class="events-carousel-wrapper" id="eventsCarousel">
-                    {{#each upcoming}}
-                    <div class="event-card-wrapper">
-                        <div class="card mt-3">
-                            <div class="card-body">
-                                <h6 class="card-subtitle mb-2 text-muted">{{displayDate}} | {{displayStartTime}} - {{displayEndTime}}</h6>
-                                <h5 class="card-title">{{eventName}}</h5>
-                                <p>{{eventDescription}}</p>
+{{!-- inside your events carousel --}}
+{{#each upcoming}}
+  <div class="event-card-wrapper">
+    <div class="card mt-3">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">
+          {{displayDate}} | {{displayStartTime}} - {{displayEndTime}}
+        </h6>
+        <h5 class="card-title">{{eventName}}</h5>
+        <p>{{eventDescription}}</p>
 
-                                <div class="d-flex justify-content-end">
-                                    <a class="btn btn-primary btn-sm" href="/editEvent/{{_id}}">Edit</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{/each}}
-                </div>
+        {{!-- safely check user exists then role --}}
+        {{#if ../user}}
+          {{#if (eq ../user.role 'admin')}}
+            <div class="d-flex justify-content-end">
+              <a class="btn btn-primary btn-sm" href="/editEvent/{{_id}}">Edit</a>
             </div>
-            </div>
-            
-            <button class="carousel-arrow carousel-arrow-right" id="carouselRight" type="button">
-                &#8250;
-            </button>
-        </div>
-        
-        <div class="justify-content-end">
-            <button class="mt-3 btn btn-success rounded" id="create-event" type="button">Create a New Event</button>
-        </div>
-        <div class="text-end mt-3">
-            <h3><a href="#">View All ></a></h3>
-        </div>
+          {{/if}}
+        {{/if}}
+
+      </div>
     </div>
+  </div>
+{{/each}}
+
+{{!-- Create button area (admin only) --}}
+{{#if user}}
+  {{#if (eq user.role 'admin')}}
+    <div class="justify-content-end">
+      <button class="mt-3 btn btn-success rounded" id="create-event" type="button">
+        Create a New Event
+      </button>
+    </div>
+  {{/if}}
+{{/if}}
 
     <!-- contact us -->
     <div class="justify-content-center align-items-center mt-3 row">

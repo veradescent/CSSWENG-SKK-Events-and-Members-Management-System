@@ -4,6 +4,7 @@ import Participation from '../../models/participationModel.js';
 import Member from '../../models/memberModel.js';
 import Event from '../../models/eventsModel.js';
 import logError from '../../../logError.js';
+import { requireAdmin } from '../../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -11,7 +12,7 @@ const router = Router();
  * POST /api/events/:id/participate
  * Body: { memberId }
  */
-router.post('/events/:id/participate', async (req, res) => {
+router.post('/events/:id/participate', requireAdmin, async (req, res) => {
   try {
     const eventId = req.params.id;
     const { memberId } = req.body;
@@ -40,7 +41,7 @@ router.post('/events/:id/participate', async (req, res) => {
 /**
  * DELETE /api/events/:id/participate/:memberId
  */
-router.delete('/events/:id/participate/:memberId', async (req, res) => {
+router.delete('/events/:id/participate/:memberId', requireAdmin, async (req, res) => {
   try {
     const { id: eventId, memberId } = req.params;
     const removed = await Participation.findOneAndDelete({ user: memberId, eventskk: eventId });

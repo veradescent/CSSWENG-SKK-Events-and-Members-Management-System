@@ -7,6 +7,7 @@ import editEventRouter from "./editEventRouter.js";
 import authenticationRouter from "./authenticationRouter.js";
 import Event from "../models/eventsModel.js";
 import calenderRouter from "./calendarRouter.js";
+import { requireAuth, requireAdmin } from '../middleware/authMiddleware.js';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
@@ -48,20 +49,10 @@ router.get('/', async (req, res) => {
             };
         }); 
 
-        // const now = dayjs();
-        // const tz = "Asia/Manila";
-        // const utc8 = now.tz(tz, true);
-        // console.log(`utc8: ${utc8}`);
-        // console.log(`now: ${now}`);
-        // const currentDate = dayjs().tz(tz).startOf('day').toDate();
-        // console.log(`currentDate: ${currentDate}`);
-        // const upcomingEvents = await Event.find(
-        //     {dateHeld: {$gte: currentDate} } // verify this based on how the timestamp will be stored
-        // );
         res.render('adminHomePage', {
-            title: "Admin Home Page",
-            upcoming: formattedEvents
-        })
+            title: "Home Page",
+            upcoming: formattedEvents,
+        });
     } catch (error) {
         console.error(error);
         await logError(error, req);

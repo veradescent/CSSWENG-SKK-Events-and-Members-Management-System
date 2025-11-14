@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Member from "../models/memberModel.js";
 import logError from '../../logError.js';
+import { requireAdmin } from '../middleware/authMiddleware.js';
 
 const memDBRouter = Router();
 
@@ -22,7 +23,7 @@ function isAdmin(req, res, next) {
 
 //GET to display db
 // GET to display db with search, filter, and sort
-memDBRouter.get('/member-database', async (req, res) => {
+memDBRouter.get('/member-database', requireAdmin, async (req, res) => {
   try {
     const { search, areaChurch, sim, sort } = req.query;
     const query = {};
@@ -84,7 +85,7 @@ memDBRouter.get('/member-database', async (req, res) => {
 
 
 //DELETE by id
-memDBRouter.delete("/member-database/:id", async (req, res) => {
+memDBRouter.delete("/member-database/:id", requireAdmin, async (req, res) => {
   try {
     const deletedMember = await Member.findByIdAndDelete(req.params.id);
     if (!deletedMember) {
@@ -98,7 +99,7 @@ memDBRouter.delete("/member-database/:id", async (req, res) => {
   }
 });
 
-memDBRouter.post('/addMember', async (req, res) => {
+memDBRouter.post('/addMember', requireAdmin, async (req, res) => {
     try {
         console.log("/addMember req received");
         
@@ -135,7 +136,7 @@ memDBRouter.post('/addMember', async (req, res) => {
     }
 });
 
-memDBRouter.put('/editMember/:id', async (req, res) => {
+memDBRouter.put('/editMember/:id', requireAdmin, async (req, res) => {
     try {
         console.log(`/editMember req received`);
         const filter = {_id: req.params.id};
