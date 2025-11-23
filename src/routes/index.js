@@ -34,7 +34,11 @@ router.get('/', async (req, res) => {
             startDateTime: { $gte: nowUTC },
             // status: { $ne: 'cancelled' }
         }).sort({ startDateTime: 1 });
-
+            console.log("RAW EVENTS FROM DB (first 3):", upcomingEvents.slice(0,3).map(e => ({
+            _id: e._id,
+            eventName: e.eventName,
+            image: e.image
+            })));
         const formattedEvents = upcomingEvents.map(event => {
             const eventObj = event.toObject();
 

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import router from "./src/routes/index.js";
 import ErrorLog from './src/models/errorLogs.js';
 import cookieParser from 'cookie-parser';
+import eventsRouter from './src/routes/eventsRouter.js';
 import jwt from 'jsonwebtoken';   // ✅ add this
 import previousEventsRouter from './src/routes/api/previousEventsRouter.js';
 // Setup Paths
@@ -16,12 +17,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 app.use('/api/events/previous', previousEventsRouter);
+app.use('/events', eventsRouter);
+
 
 // MIDDLEWARE (USER CONDITIONS)
 const TOKEN_NAME = 'auth_token';

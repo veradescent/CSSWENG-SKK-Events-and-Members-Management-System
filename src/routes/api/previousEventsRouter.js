@@ -1,74 +1,76 @@
+// src/routes/api/previousEventsRouter.js
 import { Router } from 'express';
 import Event from '../../models/eventsModel.js';
-import jwt from 'jsonwebtoken';    // ✅ FIXED IMPORT
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+import logError from '../../../logError.js';
+import { requireAdmin } from '../../middleware/authMiddleware.js'; // adjust path if needed
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const router = Router();
 
-router.post('/', async (req, res) => {
+/**
+ * POST /api/events/previous
+ * Add a previous (past) event. The UI sends a "previous event" form.
+ *
+ * Expected body fields:
+ * - title / eventName
+ * - eventDescription
+ * - location (optional)
+ * - type (optional; we'll default to 'Other' if missing)
+ * - startDateTime / endDateTime (dates)
+ * - expectedAttendees
+ *
+ * Returns 201 on success, 500 on server error.
+ */
+router.post('/previous', requireAdmin, async (req, res) => {
   try {
-    // ===== AUTH CHECK (Admin only) =====
-    const token =
-      req.cookies?.auth_token ||
-      req.headers.authorization?.split(' ')[1];
-
-    if (!token)
-      return res.status(401).json({ success: false, message: 'Auth required' });
-
-    let payload;
-    try {
-      payload = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      return res.status(401).json({ success: false, message: 'Invalid token' });
-    }
-
-    if (!payload || payload.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin only' });
-    }
-
-    // ===== Validate body =====
+    // include 'type' in destructure so missing field won't be entirely omitted
     const {
       title,
+      eventName,
       eventDescription,
       location,
+      type,
       startDateTime,
       endDateTime,
-      expectedAttendees,
-      type
-    } = req.body;
+      expectedAttendees
+    } = req.body || {};
 
-    // Previous event MUST be before now
-    if (!startDateTime || new Date(startDateTime) >= new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: 'startDateTime must be before now'
-      });
+    // Normalize name fields: prefer eventName, fallback to title
+    const name = eventName || title || 'Untitled Event';
+
+    // Validate dates (very simple validation here; adjust as needed)
+    let start = startDateTime ? new Date(startDateTime) : null;
+    let end = endDateTime ? new Date(endDateTime) : null;
+
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid start or end date' });
     }
 
-    // ===== Create event =====
+    // Create the event object; ensure `type` has a sane default so Mongoose required validators don't fail
     const newEvent = new Event({
-      title,
-      eventDescription,
-      location,
-      startDateTime: new Date(startDateTime),
-      endDateTime: endDateTime ? new Date(endDateTime) : null,
-      expectedAttendees: Number(expectedAttendees || 0),
-      type,
-      status: 'previous' // optional marker
+      eventName: name,
+      eventDescription: eventDescription || '',
+      location: location || '',
+      type: type || 'Other', // <-- important to prevent "Path `type` is required" errors
+      startDateTime: start,
+      endDateTime: end,
+      expectedAttendees: expectedAttendees ? Number(expectedAttendees) : 0,
+      status: 'previous'
     });
 
     await newEvent.save();
 
-    return res.json({
-      success: true,
-      message: 'Previous event added',
-      event: newEvent
-    });
+    return res.status(201).json({ success: true, message: 'Previous event added', event: newEvent });
   } catch (err) {
     console.error('Add previous event error', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+    // Use our centralized logger (it will not crash if logging fails)
+    await logError(err, req);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

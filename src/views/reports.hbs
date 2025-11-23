@@ -771,44 +771,85 @@ previewModal && previewModal.addEventListener('click', (ev) => {
     }
     if (closeAddPrevBtn) closeAddPrevBtn.onclick = () => addPrevModal.classList.add('hidden');
     if (cancelAddPrev) cancelAddPrev.onclick = () => addPrevModal.classList.add('hidden');
+    function normalizeTimeInput(t) {
+      if (!t) return '';
+      // if string contains AM/PM convert it
+      const ampmMatch = t.match(/\s*(\d{1,2}):(\d{2})\s*([AaPp][Mm])\s*/);
+      if (ampmMatch) {
+        let hh = Number(ampmMatch[1]);
+        const mm = ampmMatch[2];
+        const isPM = ampmMatch[3].toLowerCase() === 'pm';
+        if (hh === 12 && !isPM) hh = 0;
+        if (isPM && hh !== 12) hh += 12;
+        return String(hh).padStart(2,'0') + ':' + mm;
+      }
+      // if it's already "HH:MM" just return
+      if (/^\d{1,2}:\d{2}$/.test(t)) {
+        const [h,m] = t.split(':').map(Number);
+        return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+      }
+      return '';
+    }
 
     if (addPrevForm) {
       addPrevForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(addPrevForm);
-        const date = fd.get('date');
-        const timeFrom = fd.get('timeFrom') || '';
-        const timeTo = fd.get('timeTo') || '';
-        const startISO = date ? (date + (timeFrom ? 'T' + timeFrom : 'T00:00')) : null;
-        const endISO   = date ? (date + (timeTo ? 'T' + timeTo : 'T23:59')) : null;
-        const payload = {
-          title: fd.get('title'),
-          eventDescription: fd.get('description'),
-          location: fd.get('location'),
-          startDateTime: startISO,
-          endDateTime: endISO,
-          expectedAttendees: Number(fd.get('attendees') || 0),
-          type: ''
-        };
+// inside addPrevForm.addEventListener('submit', async (e) => { ... })
+  e.preventDefault();
+  const fd = new FormData(addPrevForm);
 
-        if (startISO && new Date(startISO) >= new Date()) {
-          return alert('Previous event date/time must be before now.');
-        }
+  const date = fd.get('date'); // 'YYYY-MM-DD'
+  const rawFrom = fd.get('timeFrom') || '';
+  const rawTo   = fd.get('timeTo') || '';
 
-        try {
-          const res = await fetch('/api/events/previous', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!data.success) return alert(data.message || 'Failed to add previous event');
-          addPrevModal.classList.add('hidden');
-          location.reload();
-        } catch (err) {
-          console.error(err);
-          alert('Server error while adding previous event');
-        }
+  const timeFrom = normalizeTimeInput(rawFrom); // use your normalize function
+  const timeTo   = normalizeTimeInput(rawTo);
+
+  const startISO = date ? `${date}T${timeFrom || '00:00'}` : null;
+  const endISO   = date ? `${date}T${timeTo   || '23:59'}` : null;
+
+  const payload = {
+    title: fd.get('title'),
+    eventDescription: fd.get('description'),
+    location: fd.get('location'),
+    startDateTime: startISO,
+    endDateTime: endISO,
+    expectedAttendees: Number(fd.get('attendees') || 0),
+    type: fd.get('type') || ''  // include explicit type
+  };
+
+  console.log('POST /api/events/previous payload:', payload);
+
+  try {
+    const res = await fetch('/api/events/previous', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      const text = await res.text();
+      console.error('Non-JSON response:', res.status, text);
+      return alert('Server returned non-JSON response: ' + res.status + ' — check server logs');
+    }
+
+    console.log('Response status:', res.status, 'body:', data);
+
+    if (!res.ok) {
+      // show server-provided message + optional details
+      const msg = data.message || data.error || JSON.stringify(data);
+      return alert('Server error: ' + msg);
+    }
+
+    // success
+    addPrevModal.classList.add('hidden');
+    location.reload();
+  } catch (err) {
+    console.error('Network or fetch error:', err);
+    alert('Network error: ' + err.message);
+  }
       });
     }
 
