@@ -1,0 +1,42 @@
+.calendar-top {
+  gap: 12px; 
+}
+
+.calendar-top .ms-auto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0; 
+}
+
+.calendar-top .btn-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.calendar-top .btn-group .btn,
+.calendar-top .btn-group button {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .calendar-top { gap: 8px; }
+  .calendar-top #monthYear { font-size: 1.25rem; }
+  .calendar-top .btn-group .btn,
+  .calendar-top .btn-group button {
+    padding: 4px 8px;
+    font-size: 0.86rem;
+  }
+  .calendar-top .btn-group .btn:first-child,
+  .calendar-top .btn-group .btn:last-child {
+    padding: 4px 8px;
+  }
+  .calendar-top #monthYear {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+  }
+}

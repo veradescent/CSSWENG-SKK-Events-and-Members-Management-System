@@ -21,6 +21,15 @@ body.reports-page {
   padding: 0 20px;
 }
 
+.view-btn {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin: 24px auto;
+}
+.chart-container {
+  grid-column: 1 / -1;
+}
+
 /* Calendar */
 .calendar-box {
   background-color: #f6f6f6;
@@ -47,6 +56,46 @@ body.reports-page {
   font-size: 0.9rem;
 }
 .calendar-controls .active { background-color: #5dbb63; }
+
+.calendar-controls {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.calendar-controls button {
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .calendar-controls button {
+    padding: 4px 8px;
+    font-size: 0.82rem;
+  }
+  .calendar-header { gap: 8px; }
+  .calendar-nav { flex: 0 1 auto; min-width: 0; }
+  .calendar-title { font-size: 0.95rem; }
+}
+
+/* Mobile: stack calendar, previous events, then view button/chart vertically */
+@media (max-width: 900px) {
+  .reports-container {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 0 12px;
+  }
+  .calendar-box, .previous-events, .chart-container {
+    width: 100%;
+  }
+  .view-btn {
+    grid-column: auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 10px 14px;
+    justify-self: center;
+  }
+}
 
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
 .day-header {
