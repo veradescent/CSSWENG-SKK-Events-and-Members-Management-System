@@ -17,17 +17,20 @@
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "worker": "node src/queue/emailWorker.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
+    "bullmq": "^5.64.1",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-handlebars": "^8.0.3",
     "hbs": "^4.2.0",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^7.0.0",
     "mongoose": "^8.19.3",

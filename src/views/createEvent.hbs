@@ -1,4 +1,4 @@
-<!-- src/views/createEvent.hbs -->
+<!-- src/views/createEvent.hbs --> 
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-body">
@@ -63,20 +63,50 @@
                         </div>
 
                         <div id="customMembers" class="mt-2">
-                            <label>Custom</label>
+                            <label>Custom (SIM groups)</label>
                             <div class="member-list">
+                                <!-- Replace individual member checkboxes with SIM group checkboxes -->
+                                <div class="form-check">
+                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="Kids" id="sim-Kids">
+                                    <label class="form-check-label" for="sim-Kids">Kids</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="Youth" id="sim-Youth">
+                                    <label class="form-check-label" for="sim-Youth">Youth</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="YoAds" id="sim-YoAds">
+                                    <label class="form-check-label" for="sim-YoAds">YoAds</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="WOW" id="sim-WOW">
+                                    <label class="form-check-label" for="sim-WOW">WOW</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="DIG" id="sim-DIG">
+                                    <label class="form-check-label" for="sim-DIG">DIG</label>
+                                </div>
+
+                                <!-- If you still want to show the raw member list for reference uncomment the block below
+                                     but we do NOT submit individual members anymore per your request.
+                                     Keep it commented to avoid changing behavior.
+                                -->
+                                {{!--
                                 {{#if members}}
                                     {{#each members}}
                                         <div class="form-check">
-                                            <input class="form-check-input member-checkbox" type="checkbox" value="{{this._id}}" id="member-{{@index}}" name="customMembers">
+                                            <input class="form-check-input member-checkbox" type="checkbox" value="{{this._id}}" id="member-{{@index}}">
                                             <label class="form-check-label" for="member-{{@index}}">{{this.fullName}}</label>
                                         </div>
                                     {{/each}}
-                                {{else}}
-                                    <div>No members found</div>
                                 {{/if}}
+                                --}}
+
                             </div>
                         </div>
+
+                        <!-- hidden input to send selected SIM groups as the original `customMembers` field (server expects customMembers) -->
+                        <input type="hidden" id="customMembersInput" name="customMembers" value="[]">
                     </div>
                 </div>
 
@@ -91,7 +121,46 @@
 </div>
 
 <script>
-  // client-side behavior: ensure customMembers checkboxes are included in POST
-  // This script preserves existing behavior while keeping form submission simple.
-  // If your original app used AJAX, adapt accordingly.
+  // client-side behavior: ensure customMembers (SIM list) hidden input is updated before submit
+  (function () {
+    const sendAllEl = document.getElementById('sendAll');
+    const simCheckboxes = document.querySelectorAll('.sim-checkbox');
+    const customHidden = document.getElementById('customMembersInput');
+    const form = document.getElementById('createEventForm');
+
+    function updateHidden() {
+      const selectedSIMs = Array.from(simCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.dataset.sim);
+      customHidden.value = JSON.stringify(selectedSIMs);
+    }
+
+    // If sendAll is checked, clear SIM checkboxes (we will send to all instead)
+    sendAllEl && sendAllEl.addEventListener('change', () => {
+      if (sendAllEl.checked) {
+        simCheckboxes.forEach(cb => cb.checked = false);
+      }
+      updateHidden();
+    });
+
+    simCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        // if any SIM is checked, uncheck sendAll because custom selection takes precedence
+        if (cb.checked && sendAllEl) {
+          sendAllEl.checked = false;
+        }
+        updateHidden();
+      });
+    });
+
+    // Update hidden input on submit (last chance)
+    form.addEventListener('submit', (e) => {
+      updateHidden();
+      // no preventDefault here — we want the form to submit normally as before
+      // ensure at least the hidden input is set
+    });
+
+    // initialize hidden with default (no SIMs selected)
+    updateHidden();
+  })();
 </script>

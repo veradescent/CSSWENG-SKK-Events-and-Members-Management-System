@@ -1,0 +1,14 @@
+.previous-events .prev-event-item {
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .12s ease;
+  border-left: 4px solid transparent; /* default */
+}
+.previous-events .prev-event-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border-left-color: #5dbb63;
+}
+.previous-events .prev-event-item:focus {
+  outline: 2px solid rgba(93,187,99,0.18);
+  outline-offset: 4px;
+}

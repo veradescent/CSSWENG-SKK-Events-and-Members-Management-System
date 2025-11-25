@@ -1,19 +1,14 @@
-import mongoose from 'mongoose';
-const { Schema, model } = mongoose
+import mongoose from "mongoose";
 
-const memberSchema = new Schema({
-    fullName: {type: String, required: true, trim: true},
-    areaChurch: {type: String, required: true, trim: true},
-    age: {type: Number,min: 0},
+const memberSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  areaChurch: { type: String, required: true },
+  sim: { type: String, required: true },
+  contactNumber: { type: String },
+  emailAddress: { type: String, required: true },
+  dateAdded: { type: Date, default: Date.now }
+});
 
-    sim: {type: String, enum: ['Kids', 'Youth', 'YoAds', 'WOW', 'DIG'], //restrict to known SIMs (optional) 
-        required: true},
+const Member = mongoose.model("Member", memberSchema);
 
-    emailAddress: {type: String, trim: true, lowercase: true, match: [/^\S+@\S+\.\S+$/, 'Invalid email address'],}, // xxx@xxx.xxx
-    contactNumber: {type: String, trim: true, match: [/^(\+63|0)\d{10}$/, 'Invalid contact number']}, // +63.... or 09...
-
-    dateAdded: {type: Date,default: Date.now}
-}, { versionKey: false });
-
-const Member = model('member', memberSchema);
 export default Member;

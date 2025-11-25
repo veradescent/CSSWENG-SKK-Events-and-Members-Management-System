@@ -74,7 +74,8 @@ memDBRouter.get('/member-database', requireAdmin, async (req, res) => {
     res.render('memberDatabase', {
       members: allMembers,
       title: "Member Database",
-      filters: { search, areaChurch, sim, sort }
+      filters: { search, areaChurch, sim, sort },
+      user: req.user  
     });
   } catch (error) {
     console.error("Error fetching members:", error);
@@ -99,61 +100,86 @@ memDBRouter.delete("/member-database/:id", requireAdmin, async (req, res) => {
   }
 });
 
+// POST /addMember — return validation errors (don't silently `return`)
 memDBRouter.post('/addMember', requireAdmin, async (req, res) => {
-    try {
-        console.log("/addMember req received");
-        
-        const newMember = new Member({
-            fullName: req.body.fullName,        
-            areaChurch: req.body.areaChurch,      
-            sim: req.body.sim,              
-            contactNumber: req.body.contactNumber,
-            emailAddress: req.body.emailAddress     
-        });
-        
-        try {
-            await newMember.save(); 
-        } catch (error) {
-            console.log(`Error from model: ${error}`)
-            await logError(error, req);
-            return
-        }
-        // console.log('Member Successfully created');
-        // console.log(`${newMember.fullName} successfully created`);
-        
-        // Add some validation check afterwards in public/js/memberDatabase.js
-        return res.status(200).json({ 
-            message: 'Member created successfully',
-        });
-        
-    } catch (error) {
-        console.error("Error creating member:", error);
-        await logError(error, req);
-        return res.status(500).json({ 
-            error: 'Failed to create member',
-            details: error.message 
-        });
+  try {
+    console.log("/addMember req received");
+    const newMember = new Member({
+      fullName: req.body.fullName,
+      areaChurch: req.body.areaChurch,
+      sim: req.body.sim,
+      contactNumber: req.body.contactNumber,
+      emailAddress: req.body.emailAddress
+    });
+
+    await newMember.save(); // let validation errors bubble to catch
+
+    return res.status(201).json({
+      message: 'Member created successfully',
+      id: newMember._id
+    });
+  } catch (error) {
+    console.error(`POST /addMember error: ${error}`);
+    if (typeof logError === 'function') await logError(error, req);
+
+    // If validation error, send details so frontend/dev can see what's wrong
+    if (error.name === 'ValidationError') {
+      const details = Object.keys(error.errors).reduce((acc, k) => {
+        acc[k] = error.errors[k].message;
+        return acc;
+      }, {});
+      return res.status(400).json({ message: 'Validation failed', details });
     }
+
+    return res.status(500).json({
+      message: 'Failed to create member',
+      details: error.message
+    });
+  }
 });
 
+// PUT /editMember/:id — run validators and return useful response
 memDBRouter.put('/editMember/:id', requireAdmin, async (req, res) => {
-    try {
-        console.log(`/editMember req received`);
-        const filter = {_id: req.params.id};
-        const update = req.body;
-        const mem = await Member.findOneAndUpdate(filter, update);
-        console.log(`Member found: ${mem.fullName}`);
-        return res.status(200).json({
-            message: 'DB updated successfully'
-        });
-    } catch (error) {
-        console.error(error);
-        await logError(error, req);
-        return res.status(500).json({ 
-            error: 'Failed to update member',
-            details: error.message 
-        });
+  try {
+    console.log(`/editMember req received for id=${req.params.id}`);
+    const filter = { _id: req.params.id };
+    const update = {
+      fullName: req.body.fullName,
+      areaChurch: req.body.areaChurch,
+      sim: req.body.sim,
+      contactNumber: req.body.contactNumber,
+      emailAddress: req.body.emailAddress
+    };
+
+    const mem = await Member.findOneAndUpdate(filter, update, {
+      new: true,
+      runValidators: true,
+      context: 'query'
+    }).lean().exec();
+
+    if (!mem) return res.status(404).json({ message: 'Member not found' });
+
+    return res.status(200).json({
+      message: 'DB updated successfully',
+      member: mem
+    });
+  } catch (error) {
+    console.error('PUT /editMember/:id error:', error);
+    if (typeof logError === 'function') await logError(error, req);
+
+    if (error.name === 'ValidationError') {
+      const details = Object.keys(error.errors).reduce((acc, k) => {
+        acc[k] = error.errors[k].message;
+        return acc;
+      }, {});
+      return res.status(400).json({ message: 'Validation failed', details });
     }
+
+    return res.status(500).json({
+      error: 'Failed to update member',
+      details: error.message
+    });
+  }
 });
 
 export default memDBRouter;

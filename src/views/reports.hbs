@@ -92,11 +92,13 @@
       font-size: 1.1rem;
     }
 
+    /* styling for days that have events */
     .calendar-day.event {
       background-color: #b4e4b4;
       border: 1px solid #3a813a;
       color: #133b1c;
       font-weight: 500;
+      cursor: pointer;
     }
 
     .previous-events {
@@ -122,7 +124,7 @@
       border: none;
       border-radius: 6px;
       padding: 10px 30px;
-      margin: 30px auto;
+      margin: 24px auto 0;
     }
 
     .chart-container {
@@ -131,7 +133,7 @@
       border-radius: 10px;
       padding: 25px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin: 0 auto 60px;
+      margin: 20px auto 60px;
       height: 320px; /* gives Chart.js room to render */
     }
 
@@ -255,7 +257,7 @@
         </div>
       </div>
 
-      <div class="calendar-grid" id="calendarGrid">
+      <div class="calendar-grid" id="calendarGrid" aria-live="polite">
         <!-- Headers (script will ensure proper headers are present) -->
         <div class="day-header">SUN</div>
         <div class="day-header">MON</div>
@@ -265,45 +267,46 @@
         <div class="day-header">FRI</div>
         <div class="day-header">SAT</div>
       </div>
+
+      <!-- View Statistics button moved under calendar -->
+      <button class="view-btn" id="viewStatsBtn">View Statistics</button>
+
+      <!-- Chart is below the calendar (hidden initially) -->
+      <div class="chart-container" id="chartContainer" style="display:none;">
+        <canvas id="eventChart"></canvas>
+        <p id="totalAttendeesText" class="text-center mt-3 mb-0 fw-semibold">
+          Total attendees: 0
+        </p>
+      </div>
     </div>
 
-<!-- Right column: Previous events -->
-<div class="previous-events">
-  <h5>Previous events</h5>
+    <!-- Right column: Previous events -->
+    <div class="previous-events" aria-live="polite">
+      <h5>Previous events</h5>
 
-  {{#each previousEvents}}
-  <div class="event-card prev-event-item"
-       role="button"
-       tabindex="0"
-       data-id="{{_id}}"
-       data-title="{{title}}"
-       data-desc="{{eventDescription}}"
-       data-location="{{location}}"
-       data-start="{{startDateTime}}"        <!-- ISO expected -->
-       data-end="{{endDateTime}}"
-       data-attendees="{{expectedAttendees}}"
-       data-type="{{type}}">
-    <small>{{displayDate}} | {{displayStartTime}} – {{displayEndTime}}</small>
-    <div style="font-weight:700">{{title}}</div>
-    <small>LOCATION: {{location}}</small>
-  </div>
-  {{/each}}
-
-  <!-- Admin only: add previous event -->
-  {{#if (eq user.role 'admin')}}
-    <div style="margin-top:12px; text-align:center;">
-      <button id="addPrevBtn" class="btn btn-success btn-sm">Add Previous Event</button>
+      <!-- keep the list in a dedicated container so we don't overwrite the heading -->
+      <div id="previousEventsList">
+        {{#each previousEvents}}
+        <div class="event-card prev-event-item"
+             role="button"
+             tabindex="0"
+             data-id="{{_id}}"
+             data-title="{{title}}"
+             data-desc="{{eventDescription}}"
+             data-location="{{location}}"
+             data-start="{{startDateTime}}"
+             data-end="{{endDateTime}}"
+             data-attendees="{{expectedAttendees}}"
+             data-type="{{type}}">
+          <small style="display:block; margin-bottom:6px; color:#6b7280;">
+            {{displayDate}} | {{displayStartTime}} – {{displayEndTime}}
+          </small>
+          <div style="font-weight:700">{{title}}</div>
+          <small style="display:block; margin-top:6px; color:#374151;">LOCATION: {{location}}</small>
+        </div>
+        {{/each}}
+      </div>
     </div>
-  {{/if}}
-</div>
-
-  <button class="view-btn">View Statistics</button>
-
-  <div class="chart-container">
-    <canvas id="eventChart"></canvas>
-    <p id="totalAttendeesText" class="text-center mt-3 mb-0 fw-semibold">
-      Total attendees: 0
-    </p>
   </div>
 
 <script>
@@ -325,21 +328,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const closePreviewBtn = document.getElementById('closePreviewBtn') || null;
 
     const chartCanvas = document.getElementById('eventChart');
+    const chartContainerEl = document.getElementById('chartContainer');
+    const viewBtn = document.getElementById('viewStatsBtn');
 
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     let currentDate = new Date(); // active date context
     let currentView = 'month'; // 'month' | 'week' | 'day'
     let eventsCache = [];
-    // simple DOM-safe text escaper
+
+    // simple DOM-safe text escaper (single shared definition)
     function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
+      if (!str) return '';
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
+
     // ===== Chart.js: create and updater =====
     let eventChart = null;
     function createEmptyChart() {
@@ -365,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function updateStatsFromEvents(events) {
       if (!eventChart) return;
-      // Aggregate by title (fallback to 1 per event if no attendee count)
       const map = new Map();
       for (const ev of events || []) {
         const key = ev.title || ev.eventName || 'Untitled';
@@ -376,58 +382,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = labels.map(l => map.get(l));
       eventChart.data.labels = labels;
       eventChart.data.datasets[0].data = data;
-      eventChart.update();
-      const totalAttendees = (events || []).reduce((sum, ev) => {
-      const count = Number(
-        ev.expectedAttendees ??
-        ev.attendees ??
-        ev.attendeeCount ??
-        ev.noOfAttendees ??
-        0
-      );
-      return sum + (isNaN(count) ? 0 : count);
-    }, 0);
+      try { eventChart.update(); } catch(e) { /* ignore chart errors */ }
 
-    const totalTextEl = document.getElementById('totalAttendeesText');
-    if (totalTextEl) {
-      totalTextEl.textContent = `Total attendees: ${totalAttendees}`;
-    }
+      const totalAttendees = (events || []).reduce((sum, ev) => {
+        const count = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
+        return sum + (isNaN(count) ? 0 : count);
+      }, 0);
+
+      const totalTextEl = document.getElementById('totalAttendeesText');
+      if (totalTextEl) totalTextEl.textContent = `Total attendees: ${totalAttendees}`;
     }
     // create chart instance once
     eventChart = createEmptyChart();
 
-    // ===== View Statistics button =====
-    const viewBtn = document.querySelector('.view-btn');
-    const chartContainerEl = document.querySelector('.chart-container');
-
-    // start hidden
+    // show/hide stats (button placed under calendar)
     if (chartContainerEl) chartContainerEl.style.display = 'none';
     if (viewBtn) viewBtn.textContent = 'View Statistics';
-
-    // toggle handler
     if (viewBtn) {
       viewBtn.addEventListener('click', () => {
         if (!chartContainerEl) return;
         const isHidden = chartContainerEl.style.display === 'none' || getComputedStyle(chartContainerEl).display === 'none';
-
         if (isHidden) {
-          // show
-          chartContainerEl.style.display = '';            // restores default (block)
+          chartContainerEl.style.display = '';
           viewBtn.textContent = 'Hide Statistics';
-          // ensure chart resizes / renders
-          if (eventChart) {
-            try { eventChart.resize(); } catch(e) { /* ignore */ }
-            try { eventChart.update(); } catch(e) { /* ignore */ }
-          }
+          setTimeout(() => { try { eventChart && eventChart.resize(); eventChart && eventChart.update(); } catch(e){} }, 50);
         } else {
-          // hide
           chartContainerEl.style.display = 'none';
           viewBtn.textContent = 'View Statistics';
         }
-        // keep focus behavior nice
         viewBtn.blur();
       });
     }
+
     // ===== helpers & fetch =====
     function weekdayHeadersHtml() {
       return `
@@ -441,33 +427,31 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-      async function fetchEventsForRange(startISO, endISO) {
-        try {
-          const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
-          const data = await res.json();
-          if (!data.success) return [];
-          return data.events.map(ev => {
-            const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date || ev.datetime || ev.startDate;
-            const endStr = ev.end || ev.endUTC || ev.endDateTime || ev.endDate || ev.finish;
-            const title = ev.title || ev.eventName || ev.name || ev.summary || 'Untitled';
-            const description = ev.description || ev.details || ev.eventDescription || '';
-            const location = ev.location || ev.venue || ev.place || ev.locationName || '';
-            const attendees = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
-            const type = ev.type || ev.eventType || ev.category || '';
-            const id = ev._id || ev.id || ev.eventId || null;
+    async function fetchEventsForRange(startISO, endISO) {
+      try {
+        const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
+        const data = await res.json();
+        if (!data.success) return [];
+        return data.events.map(ev => {
+          const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date || ev.datetime || ev.startDate;
+          const endStr = ev.end || ev.endUTC || ev.endDateTime || ev.endDate || ev.finish;
+          const title = ev.title || ev.eventName || ev.name || ev.summary || 'Untitled';
+          const description = ev.description || ev.details || ev.eventDescription || '';
+          const location = ev.location || ev.venue || ev.place || ev.locationName || '';
+          const attendees = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
+          const type = ev.type || ev.eventType || ev.category || '';
+          const id = ev._id || ev.id || ev.eventId || null;
 
-            const startDate = startStr ? new Date(startStr) : null;
-            const endDate = endStr ? new Date(endStr) : null;
+          const startDate = startStr ? new Date(startStr) : null;
+          const endDate = endStr ? new Date(endStr) : null;
 
-            return { ...ev, id, title, description, location, attendees, type, startDate, endDate };
-          });
-        } catch (err) {
-          console.error('Error fetching events', err);
-          return [];
-        }
+          return { ...ev, id, title, description, location, attendees, type, startDate, endDate };
+        });
+      } catch (err) {
+        console.error('Error fetching events', err);
+        return [];
       }
-
-
+    }
 
     // ===== renderers (month/week/day) =====
     function renderMonthView(date) {
@@ -543,8 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const key = `${y}-${m}-${d}`;
         const evs = dayMap.get(key) || [];
         if (evs.length) {
-          cell.classList.add('has-event');
-          // store richer event objects (title, time, description, location, id)
+          // use the .event class (matches CSS above)
+          cell.classList.add('event');
           const normalized = evs.map(e => ({
             id: e.id,
             title: e.title || '',
@@ -552,13 +536,12 @@ document.addEventListener('DOMContentLoaded', () => {
             location: e.location || '',
             attendees: Number(e.attendees ?? e.expectedAttendees ?? 0) || 0,
             type: e.type || e.eventType || '',
-            // store ISO strings so JSON.parse gives date strings we can turn into Date objects later
             startDateISO: e.startDate ? e.startDate.toISOString() : null,
             endDateISO: e.endDate ? e.endDate.toISOString() : null
           }));
           cell.dataset.events = JSON.stringify(normalized);
         } else {
-          cell.classList.remove('has-event');
+          cell.classList.remove('event');
           cell.dataset.events = '';
         }
       });
@@ -573,127 +556,110 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       });
     }
-    // Make previous events clickable (reports page)
-    document.querySelectorAll('.prev-event-item').forEach(el => {
-      el.addEventListener('click', () => openPrevEventFromEl(el));
-      el.addEventListener('keypress', (e) => { if (e.key === 'Enter' || e.key === ' ') openPrevEventFromEl(el); });
-    });
 
-    function openPrevEventFromEl(el) {
-      // read attributes (strings)
-      const ev = {
-        id: el.dataset.id || null,
-        title: el.dataset.title || el.querySelector('div')?.textContent || 'Untitled',
-        description: el.dataset.desc || '',
-        location: el.dataset.location || '',
-        attendees: Number(el.dataset.attendees || 0),
-        type: el.dataset.type || '',
-        // store ISO strings consistent with how showPreview expects startDateISO/endDateISO
-        startDateISO: el.dataset.start || null,
-        endDateISO: el.dataset.end || null
-      };
+    // showPreview improved: uses explicit event start date when provided (prev-event) and falls back to cell dataset
+    function showPreview(cell, evs) {
+      if (!previewModal || !previewList || !previewDate) {
+        if (!evs || evs.length === 0) return alert('No events for this day.');
+        return alert(evs.map(e => `${e.time} ${e.title}\n${e.description || ''}\nLocation: ${e.location || 'TBA'}`).join('\n\n'));
+      }
 
-      // show preview using the same modal function (expects an array of events)
-      showPreview({ dataset: { year: '', month: '', day: '' } }, [ev]);
-      // Note: showPreview reads the cell for date text to display the modal header.
-      // We can set the previewDate header manually if available:
-      const start = ev.startDateISO ? new Date(ev.startDateISO) : null;
-      if (start && previewDate) previewDate.textContent = start.toLocaleDateString();
+      // determine header date:
+      let headerDateText = '';
+      // if the single event has startDateISO use that
+      if (Array.isArray(evs) && evs.length === 1 && evs[0].startDateISO) {
+        const start = new Date(evs[0].startDateISO);
+        headerDateText = start.toLocaleDateString();
+      } else {
+        // prefer cell dataset if present
+        const y = cell && cell.dataset && cell.dataset.year;
+        const m = cell && cell.dataset && cell.dataset.month;
+        const d = cell && cell.dataset && cell.dataset.day;
+        if (y && m !== undefined && d) {
+          headerDateText = `${monthNames[Number(m)]} ${d}, ${y}`;
+        } else if (Array.isArray(evs) && evs.length > 0 && evs[0].startDateISO) {
+          headerDateText = new Date(evs[0].startDateISO).toLocaleDateString();
+        } else {
+          headerDateText = '';
+        }
+      }
+
+      previewDate.textContent = headerDateText || 'Date';
+
+      previewList.innerHTML = '';
+
+      if (!evs || evs.length === 0) {
+        previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
+      } else {
+        evs.forEach(e => {
+          const card = document.createElement('div');
+          card.className = 'preview-event-card';
+
+          const start = e.startDateISO ? new Date(e.startDateISO) : null;
+          const end = e.endDateISO ? new Date(e.endDateISO) : null;
+
+          const dateStr = start ? start.toLocaleDateString() : (end ? end.toLocaleDateString() : '');
+          const timeFrom = start ? start.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+          const timeTo = end ? end.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+
+          card.innerHTML = `
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div style="flex:1">
+                <label class="preview-label">Title</label>
+                <div class="preview-input">${escapeHtml(e.title || '')}</div>
+              </div>
+            </div>
+
+            <div class="preview-row">
+              <div class="col">
+                <label class="preview-label">Description</label>
+                <div class="preview-input" style="min-height:60px; white-space:pre-wrap;">
+                  ${escapeHtml(e.description || '')}
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-row" style="margin-top:12px">
+              <div class="col">
+                <label class="preview-label">Location</label>
+                <div class="preview-input">${escapeHtml(e.location || '')}</div>
+              </div>
+              <div style="width:160px">
+                <label class="preview-label">No. of Attendees</label>
+                <div class="preview-input">${escapeHtml(String(e.attendees || ''))}</div>
+              </div>
+            </div>
+
+            <div class="preview-row" style="margin-top:12px">
+              <div style="width:220px">
+                <label class="preview-label">Date</label>
+                <div class="preview-input">${escapeHtml(dateStr)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Time From</label>
+                <div class="preview-input">${escapeHtml(timeFrom)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Time To</label>
+                <div class="preview-input">${escapeHtml(timeTo)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Type</label>
+                <div class="preview-input">${escapeHtml(e.type || '')}</div>
+              </div>
+            </div>
+          `;
+          previewList.appendChild(card);
+        });
+      }
+
+      previewModal.classList.remove('hidden');
     }
 
-    function showPreview(cell, evs) {
-  if (!previewModal || !previewList || !previewDate) {
-    if (!evs || evs.length === 0) return alert('No events for this day.');
-    return alert(evs.map(e => `${e.time} ${e.title}\n${e.description || ''}\nLocation: ${e.location || 'TBA'}`).join('\n\n'));
-  }
-
-  const y = cell.dataset.year, m = Number(cell.dataset.month), d = cell.dataset.day;
-  previewDate.textContent = `${monthNames[m]} ${d}, ${y}`;
-  previewList.innerHTML = '';
-
-  if (!evs || evs.length === 0) {
-    previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
-  } else {
-    evs.forEach(e => {
-      const card = document.createElement('div');
-      card.className = 'preview-event-card';
-
-      // format date/time strings
-      const start = e.startDateISO ? new Date(e.startDateISO) : null;
-      const end = e.endDateISO ? new Date(e.endDateISO) : null;
-
-      const dateStr = start ? start.toLocaleDateString() : (end ? end.toLocaleDateString() : '');
-      const timeFrom = start ? start.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
-      const timeTo = end ? end.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
-      const attendeesStr = e.attendees ? String(e.attendees) : '';
-      const typeStr = e.type || '';
-      card.innerHTML = `
-      <div style="display:flex; gap:12px; align-items:center;">
-        <div style="flex:1">
-          <label class="preview-label">Title</label>
-          <div class="preview-input">${escapeHtml(e.title || '')}</div>
-        </div>
-      </div>
-
-      <div class="preview-row">
-        <div class="col">
-          <label class="preview-label">Description</label>
-          <div class="preview-input" style="min-height:60px; white-space:pre-wrap;">
-            ${escapeHtml(e.description || '')}
-          </div>
-        </div>
-      </div>
-
-      <div class="preview-row" style="margin-top:12px">
-        <div class="col">
-          <label class="preview-label">Location</label>
-          <div class="preview-input">${escapeHtml(e.location || '')}</div>
-        </div>
-        <div style="width:160px">
-          <label class="preview-label">No. of Attendees</label>
-          <div class="preview-input">${escapeHtml(String(e.attendees || ''))}</div>
-        </div>
-      </div>
-
-      <div class="preview-row" style="margin-top:12px">
-        <div style="width:220px">
-          <label class="preview-label">Date</label>
-          <div class="preview-input">${escapeHtml(dateStr)}</div>
-        </div>
-        <div style="width:140px">
-          <label class="preview-label">Time From</label>
-          <div class="preview-input">${escapeHtml(timeFrom)}</div>
-        </div>
-        <div style="width:140px">
-          <label class="preview-label">Time To</label>
-          <div class="preview-input">${escapeHtml(timeTo)}</div>
-        </div>
-        <div style="width:140px">
-          <label class="preview-label">Type</label>
-          <div class="preview-input">${escapeHtml(e.type || '')}</div>
-        </div>
-      </div>
-    `;
-
-
-      previewList.appendChild(card);
-    });
-  }
-
-  previewModal.classList.remove('hidden');
-}
-
-
-// === Close buttons for popup ===
-closePreviewBtn && (closePreviewBtn.onclick = () => previewModal.classList.add('hidden'));
-
-document.getElementById('modalCloseFooter') &&
-(document.getElementById('modalCloseFooter').onclick = () => previewModal.classList.add('hidden'));
-
-previewModal && previewModal.addEventListener('click', (ev) => { 
-  if (ev.target === previewModal) previewModal.classList.add('hidden'); 
-});
-
+    // close preview modal
+    closePreviewBtn && (closePreviewBtn.onclick = () => previewModal.classList.add('hidden'));
+    document.getElementById('modalCloseFooter') && (document.getElementById('modalCloseFooter').onclick = () => previewModal.classList.add('hidden'));
+    previewModal && previewModal.addEventListener('click', (ev) => { if (ev.target === previewModal) previewModal.classList.add('hidden'); });
 
     // Navigation behavior changes depending on currentView
     prevBtn && (prevBtn.onclick = async () => {
@@ -746,7 +712,96 @@ previewModal && previewModal.addEventListener('click', (ev) => {
         updateStatsFromEvents(eventsCache);
         renderDayView(currentDate);
       }
+      await loadPreviousEventsPanel(currentDate.getFullYear(), currentDate.getMonth());
     }
+
+    // ----- load previous events for selected month and populate panel -----
+    async function loadPreviousEventsPanel(year, month) {
+      try {
+        const res = await fetch(`/api/reports/previous?year=${year}&month=${month}`);
+        const data = await res.json();
+        const list = document.getElementById("previousEventsList");
+        if (!list) return console.warn('#previousEventsList not found');
+
+        // clear only the list container (don't remove heading or controls)
+        list.innerHTML = "";
+
+        if (!data.success || !Array.isArray(data.events) || data.events.length === 0) {
+          list.innerHTML = `<p style="opacity:0.6; margin-top:12px;">No previous events this month.</p>`;
+          attachPrevEventListeners(); // ensure old listeners cleared
+          return;
+        }
+
+        // Add each event card into the list container
+        data.events.forEach(ev => {
+          const startISO = ev.startDateTime ? new Date(ev.startDateTime).toISOString() : '';
+          const endISO = ev.endDateTime ? new Date(ev.endDateTime).toISOString() : '';
+
+          list.innerHTML += `
+            <div class="event-card prev-event-item"
+                 role="button"
+                 tabindex="0"
+                 data-id="${ev._id || ''}"
+                 data-title="${escapeHtml(ev.title || '')}"
+                 data-desc="${escapeHtml(ev.eventDescription || '')}"
+                 data-location="${escapeHtml(ev.location || '')}"
+                 data-start="${startISO}"
+                 data-end="${endISO}"
+                 data-attendees="${ev.expectedAttendees ?? 0}"
+                 data-type="${escapeHtml(ev.type || '')}">
+              <small style="display:block; margin-bottom:6px; color:#6b7280;">
+                ${escapeHtml(ev.displayDate || '')} | ${escapeHtml(ev.displayStartTime || '')} – ${escapeHtml(ev.displayEndTime || '')}
+              </small>
+              <div style="font-weight:700">${escapeHtml(ev.title || 'Untitled')}</div>
+              <small style="display:block; margin-top:6px; color:#374151;">LOCATION: ${escapeHtml(ev.location || '')}</small>
+            </div>
+          `;
+        });
+
+        // attach listeners after DOM insertion
+        attachPrevEventListeners();
+
+      } catch (err) {
+        console.error('loadPreviousEventsPanel error:', err);
+      }
+    }
+
+    // ----- make prev-event-item clickable -----
+    function attachPrevEventListeners() {
+      const items = document.querySelectorAll('.prev-event-item');
+      if (!items) return;
+      items.forEach(el => {
+        // remove old handlers to avoid double-bind
+        el.onclick = null;
+        el.onkeypress = null;
+
+        el.addEventListener('click', () => openPrevEventFromEl(el));
+        el.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') openPrevEventFromEl(el);
+        });
+      });
+    }
+
+    // ----- preview modal for previous events -----
+    function openPrevEventFromEl(el) {
+      const ev = {
+        id: el.dataset.id,
+        title: el.dataset.title,
+        description: el.dataset.desc,
+        location: el.dataset.location,
+        attendees: Number(el.dataset.attendees || 0),
+        type: el.dataset.type,
+        startDateISO: el.dataset.start,
+        endDateISO: el.dataset.end
+      };
+
+      // set preview header date from start ISO (if present)
+      if (ev.startDateISO && previewDate) previewDate.textContent = new Date(ev.startDateISO).toLocaleDateString();
+
+      // show preview using the same showPreview (it expects an array of events)
+      showPreview({ dataset: { year: '', month: '', day: '' } }, [ev]);
+    }
+
     // initial
     setActiveView('month');
     await loadForCurrentView();
@@ -771,9 +826,9 @@ previewModal && previewModal.addEventListener('click', (ev) => {
     }
     if (closeAddPrevBtn) closeAddPrevBtn.onclick = () => addPrevModal.classList.add('hidden');
     if (cancelAddPrev) cancelAddPrev.onclick = () => addPrevModal.classList.add('hidden');
+
     function normalizeTimeInput(t) {
       if (!t) return '';
-      // if string contains AM/PM convert it
       const ampmMatch = t.match(/\s*(\d{1,2}):(\d{2})\s*([AaPp][Mm])\s*/);
       if (ampmMatch) {
         let hh = Number(ampmMatch[1]);
@@ -783,7 +838,6 @@ previewModal && previewModal.addEventListener('click', (ev) => {
         if (isPM && hh !== 12) hh += 12;
         return String(hh).padStart(2,'0') + ':' + mm;
       }
-      // if it's already "HH:MM" just return
       if (/^\d{1,2}:\d{2}$/.test(t)) {
         const [h,m] = t.split(':').map(Number);
         return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
@@ -793,63 +847,58 @@ previewModal && previewModal.addEventListener('click', (ev) => {
 
     if (addPrevForm) {
       addPrevForm.addEventListener('submit', async (e) => {
-// inside addPrevForm.addEventListener('submit', async (e) => { ... })
-  e.preventDefault();
-  const fd = new FormData(addPrevForm);
+        e.preventDefault();
+        const fd = new FormData(addPrevForm);
 
-  const date = fd.get('date'); // 'YYYY-MM-DD'
-  const rawFrom = fd.get('timeFrom') || '';
-  const rawTo   = fd.get('timeTo') || '';
+        const date = fd.get('date'); // 'YYYY-MM-DD'
+        const rawFrom = fd.get('timeFrom') || '';
+        const rawTo   = fd.get('timeTo') || '';
 
-  const timeFrom = normalizeTimeInput(rawFrom); // use your normalize function
-  const timeTo   = normalizeTimeInput(rawTo);
+        const timeFrom = normalizeTimeInput(rawFrom);
+        const timeTo   = normalizeTimeInput(rawTo);
 
-  const startISO = date ? `${date}T${timeFrom || '00:00'}` : null;
-  const endISO   = date ? `${date}T${timeTo   || '23:59'}` : null;
+        const startISO = date ? `${date}T${timeFrom || '00:00'}` : null;
+        const endISO   = date ? `${date}T${timeTo   || '23:59'}` : null;
 
-  const payload = {
-    title: fd.get('title'),
-    eventDescription: fd.get('description'),
-    location: fd.get('location'),
-    startDateTime: startISO,
-    endDateTime: endISO,
-    expectedAttendees: Number(fd.get('attendees') || 0),
-    type: fd.get('type') || ''  // include explicit type
-  };
+        const payload = {
+          title: fd.get('title'),
+          eventDescription: fd.get('description'),
+          location: fd.get('location'),
+          startDateTime: startISO,
+          endDateTime: endISO,
+          expectedAttendees: Number(fd.get('attendees') || 0),
+          type: fd.get('type') || ''
+        };
 
-  console.log('POST /api/events/previous payload:', payload);
+        console.log('POST /api/events/previous payload:', payload);
 
-  try {
-    const res = await fetch('/api/events/previous', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+        try {
+          const res = await fetch('/api/events/previous', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
 
-    let data;
-    try {
-      data = await res.json();
-    } catch (parseErr) {
-      const text = await res.text();
-      console.error('Non-JSON response:', res.status, text);
-      return alert('Server returned non-JSON response: ' + res.status + ' — check server logs');
-    }
+          let data;
+          try { data = await res.json(); } catch (parseErr) {
+            const text = await res.text();
+            console.error('Non-JSON response:', res.status, text);
+            return alert('Server returned non-JSON response: ' + res.status + ' — check server logs');
+          }
 
-    console.log('Response status:', res.status, 'body:', data);
+          console.log('Response status:', res.status, 'body:', data);
 
-    if (!res.ok) {
-      // show server-provided message + optional details
-      const msg = data.message || data.error || JSON.stringify(data);
-      return alert('Server error: ' + msg);
-    }
+          if (!res.ok) {
+            const msg = data.message || data.error || JSON.stringify(data);
+            return alert('Server error: ' + msg);
+          }
 
-    // success
-    addPrevModal.classList.add('hidden');
-    location.reload();
-  } catch (err) {
-    console.error('Network or fetch error:', err);
-    alert('Network error: ' + err.message);
-  }
+          addPrevModal.classList.add('hidden');
+          location.reload();
+        } catch (err) {
+          console.error('Network or fetch error:', err);
+          alert('Network error: ' + err.message);
+        }
       });
     }
 
@@ -857,33 +906,26 @@ previewModal && previewModal.addEventListener('click', (ev) => {
 });     // end DOMContentLoaded
 </script>
 
-
-
 <style>
-  /* day with events */
-  .calendar-day.has-event {
+  /* day with events - keep in sync with class used by JS (.event) */
+  .calendar-day.event {
     background: #b4e4b4;
     border: 1px solid #3a813a;
     color: #133b1c;
     font-weight: 600;
     cursor: pointer;
   }
-  .calendar-day.empty {
-    background: transparent;
-    box-shadow: none;
-  }
-  .calendar-day.today {
-    box-shadow: 0 0 0 2px rgba(93,187,99,0.25) inset;
-  }
-  /* modal utility */
+  .calendar-day.empty { background: transparent; box-shadow: none; }
+  .calendar-day.today { box-shadow: 0 0 0 2px rgba(93,187,99,0.25) inset; }
   .hidden { display: none; }
 </style>
+
 <!-- Event Preview Modal (Edit-style read-only cards) -->
 <div id="dayPreviewModal" class="hidden modal-overlay">
   <div class="modal-card">
     <div class="modal-header">
       <h3 id="previewDate" class="modal-title">Date</h3>
-      <button id="closePreviewBtn" class="btn-close"></button>
+      <button id="closePreviewBtn" class="btn-close">×</button>
     </div>
 
     <div id="previewList" class="modal-body">
@@ -895,6 +937,7 @@ previewModal && previewModal.addEventListener('click', (ev) => {
     </div>
   </div>
 </div>
+
 <!-- Add Previous Event Modal (admin only) -->
 <div id="addPrevModal" class="hidden modal-overlay">
   <div class="modal-card">
