@@ -1,61 +1,61 @@
 // src/models/eventsModel.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const eventSchema = new Schema({
   image: {
     type: String,
-    default: null
+    default: null,
   },
   eventName: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   eventDescription: {
     type: String,
     default: '',
-    trim: true
+    trim: true,
   },
   // ADDED: location field (so create new events can include location)
   location: {
     type: String,
-    default: ''
+    default: '',
   },
   // type of event (required in your schema earlier; set to required if you want)
   type: {
     type: String,
     required: false, // made optional at schema level to be safe, but server code ensures value
-    default: 'Other'
+    default: 'Other',
   },
   startDateTime: {
     type: Date,
-    required: true
+    required: true,
   },
   endDateTime: {
     type: Date,
-    required: true
+    required: true,
   },
   expectedAttendees: {
     type: Number,
-    default: 0
+    default: 0,
   },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    default: null
+    default: null,
   },
   status: {
     type: String,
     enum: ['upcoming', 'previous', 'cancelled'],
-    default: 'upcoming'
+    default: 'upcoming',
   },
   // any other fields your app used (keep them here to avoid removing original fields)
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
-   minutesLink: { type: String, default: '' }
+  minutesLink: { type: String, default: '' },
 });
 
 // If the original model had extra indexes or methods, preserve them here.

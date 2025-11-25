@@ -21,7 +21,8 @@ router.post('/events/:id/participate', requireAdmin, async (req, res) => {
     // validate
     const member = await Member.findById(memberId);
     const event = await Event.findById(eventId);
-    if (!member || !event) return res.status(404).json({ success: false, message: 'Member or event not found' });
+    if (!member || !event)
+      return res.status(404).json({ success: false, message: 'Member or event not found' });
 
     // avoid duplicate
     const exists = await Participation.findOne({ user: memberId, eventskk: eventId });
@@ -45,7 +46,8 @@ router.delete('/events/:id/participate/:memberId', requireAdmin, async (req, res
   try {
     const { id: eventId, memberId } = req.params;
     const removed = await Participation.findOneAndDelete({ user: memberId, eventskk: eventId });
-    if (!removed) return res.status(404).json({ success: false, message: 'Participation not found' });
+    if (!removed)
+      return res.status(404).json({ success: false, message: 'Participation not found' });
     return res.json({ success: true });
   } catch (err) {
     console.error('DELETE participation error', err);

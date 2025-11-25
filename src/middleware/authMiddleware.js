@@ -15,11 +15,10 @@ export function requireAuth(req, res, next) {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
     return next();
-  } catch (err) {
+  } catch {
     return res.redirect('/login');
   }
 }
-
 
 export function requireAdmin(req, res, next) {
   requireAuth(req, res, () => {
@@ -29,4 +28,3 @@ export function requireAdmin(req, res, next) {
     return next();
   });
 }
-

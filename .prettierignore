@@ -1,0 +1,4 @@
+# ignore handlebars templates (format JS/CSS/JSON/etc only)
+src/views/**/*.hbs
+src/views/partials/**/*.hbs
+public/**/*.hbs

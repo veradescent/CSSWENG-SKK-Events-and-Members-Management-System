@@ -15,7 +15,7 @@ router.get('/reports', (req, res) => {
     return res.render('reports', {
       title: 'Reports',
       user: userForTemplate,
-      previousEvents: [] // safe default; frontend will fetch actual previous events
+      previousEvents: [], // safe default; frontend will fetch actual previous events
     });
   } catch (err) {
     console.error('Error rendering /reports:', err);
@@ -25,7 +25,7 @@ router.get('/reports', (req, res) => {
     return res.status(500).render('reports', {
       title: 'Reports',
       user: userForTemplate,
-      previousEvents: []
+      previousEvents: [],
     });
   }
 });
@@ -45,13 +45,13 @@ router.get('/api/reports/previous', async (req, res) => {
     const events = await Event.find({
       $and: [
         { startDateTime: { $gte: start, $lte: end } }, // inside month range
-        { startDateTime: { $lt: now } }               // already past
-      ]
+        { startDateTime: { $lt: now } }, // already past
+      ],
     })
       .sort({ startDateTime: -1 })
       .lean();
 
-    const formatted = events.map(e => ({
+    const formatted = events.map((e) => ({
       _id: e._id,
       title: e.eventName || e.title || 'Untitled',
       location: e.location || '',
@@ -61,9 +61,13 @@ router.get('/api/reports/previous', async (req, res) => {
       expectedAttendees: e.expectedAttendees ?? 0,
       type: e.type || '',
       displayDate: e.startDateTime ? new Date(e.startDateTime).toLocaleDateString() : '',
-      displayStartTime: e.startDateTime ? new Date(e.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-      displayEndTime: e.endDateTime ? new Date(e.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-      minutesLink: e.minutesLink || e.minutes_link || '' // include minutes link for UI convenience
+      displayStartTime: e.startDateTime
+        ? new Date(e.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
+      displayEndTime: e.endDateTime
+        ? new Date(e.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
+      minutesLink: e.minutesLink || e.minutes_link || '', // include minutes link for UI convenience
     }));
 
     return res.json({ success: true, events: formatted });
@@ -99,7 +103,7 @@ router.post('/api/reports/previous', requireAdmin, async (req, res) => {
       expectedAttendees: payload.expectedAttendees ?? 0,
       type: payload.type || '',
       // keep minutesLink if provided at creation time
-      minutesLink: payload.minutesLink || ''
+      minutesLink: payload.minutesLink || '',
     });
 
     await newEvent.save();
@@ -141,7 +145,7 @@ router.get('/api/reports/previous-all', requireAdmin, async (req, res) => {
       .sort({ startDateTime: -1 })
       .lean();
 
-    const formatted = events.map(e => ({
+    const formatted = events.map((e) => ({
       _id: e._id,
       title: e.eventName || e.title || 'Untitled',
       eventName: e.eventName || e.title || 'Untitled',
@@ -154,8 +158,12 @@ router.get('/api/reports/previous-all', requireAdmin, async (req, res) => {
       image: e.image || '',
       minutesLink: e.minutesLink || e.minutes_link || '',
       displayDate: e.startDateTime ? new Date(e.startDateTime).toLocaleDateString() : '',
-      displayStartTime: e.startDateTime ? new Date(e.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
-      displayEndTime: e.endDateTime ? new Date(e.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+      displayStartTime: e.startDateTime
+        ? new Date(e.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
+      displayEndTime: e.endDateTime
+        ? new Date(e.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '',
     }));
 
     return res.json({ success: true, events: formatted });

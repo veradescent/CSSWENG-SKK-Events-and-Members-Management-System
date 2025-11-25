@@ -6,7 +6,7 @@ dotenv.config();
 
 const redisOptions = {
   host: process.env.REDIS_HOST || '127.0.0.1',
-  port: Number(process.env.REDIS_PORT || 6379)
+  port: Number(process.env.REDIS_PORT || 6379),
 };
 if (process.env.REDIS_PASSWORD) redisOptions.password = process.env.REDIS_PASSWORD;
 
@@ -18,9 +18,9 @@ export const emailQueue = new Queue('emailQueue', {
     attempts: 5,
     backoff: {
       type: 'exponential',
-      delay: 1000
+      delay: 1000,
     },
     removeOnComplete: true,
-    removeOnFail: false
-  }
+    removeOnFail: false,
+  },
 });

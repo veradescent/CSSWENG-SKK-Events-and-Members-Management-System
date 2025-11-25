@@ -37,15 +37,15 @@ router.post('/previous', requireAdmin, async (req, res) => {
       type,
       startDateTime,
       endDateTime,
-      expectedAttendees
+      expectedAttendees,
     } = req.body || {};
 
     // Normalize name fields: prefer eventName, fallback to title
     const name = eventName || title || 'Untitled Event';
 
     // Validate dates (very simple validation here; adjust as needed)
-    let start = startDateTime ? new Date(startDateTime) : null;
-    let end = endDateTime ? new Date(endDateTime) : null;
+    const start = startDateTime ? new Date(startDateTime) : null;
+    const end = endDateTime ? new Date(endDateTime) : null;
 
     if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
       return res.status(400).json({ success: false, message: 'Invalid start or end date' });
@@ -60,12 +60,14 @@ router.post('/previous', requireAdmin, async (req, res) => {
       startDateTime: start,
       endDateTime: end,
       expectedAttendees: expectedAttendees ? Number(expectedAttendees) : 0,
-      status: 'previous'
+      status: 'previous',
     });
 
     await newEvent.save();
 
-    return res.status(201).json({ success: true, message: 'Previous event added', event: newEvent });
+    return res
+      .status(201)
+      .json({ success: true, message: 'Previous event added', event: newEvent });
   } catch (err) {
     console.error('Add previous event error', err);
     // Use our centralized logger (it will not crash if logging fails)

@@ -17,9 +17,9 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    const unique = `${Date.now()}-${Math.random().toString(36).substring(2,8)}${ext}`;
+    const unique = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
     cb(null, unique);
-  }
+  },
 });
 
 const upload = multer({
@@ -28,11 +28,10 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif/;
     const isValid =
-      allowed.test(file.mimetype) &&
-      allowed.test(path.extname(file.originalname).toLowerCase());
+      allowed.test(file.mimetype) && allowed.test(path.extname(file.originalname).toLowerCase());
     if (isValid) cb(null, true);
-    else cb(new Error("Only image files allowed (.jpg, .jpeg, .png, .gif)"));
-  }
+    else cb(new Error('Only image files allowed (.jpg, .jpeg, .png, .gif)'));
+  },
 });
 
 // POST /api/upload-image

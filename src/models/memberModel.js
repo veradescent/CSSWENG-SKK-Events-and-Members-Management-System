@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const memberSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
@@ -6,9 +6,9 @@ const memberSchema = new mongoose.Schema({
   sim: { type: String, required: true },
   contactNumber: { type: String },
   emailAddress: { type: String, required: true },
-  dateAdded: { type: Date, default: Date.now }
+  dateAdded: { type: Date, default: Date.now },
 });
 
-const Member = mongoose.model("Member", memberSchema);
+const Member = mongoose.model('Member', memberSchema);
 
 export default Member;

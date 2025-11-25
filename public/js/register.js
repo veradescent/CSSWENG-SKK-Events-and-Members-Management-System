@@ -12,16 +12,15 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const resp = await fetch('/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 
   const json = await resp.json();
 
   if (json.success) {
-    alert("User created");
-    window.location.href = "/login";  // redirect to login page
+    alert('User created');
+    window.location.href = '/login'; // redirect to login page
   } else {
-    alert(json.message || "Error creating user");
+    alert(json.message || 'Error creating user');
   }
 });
-

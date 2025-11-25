@@ -1,10 +1,9 @@
 // src/routes/createEventRouter.js
-import { Router } from "express";
-import Participation from "../models/participationModel.js";
-import Event from "../models/eventsModel.js";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import timezone from "dayjs/plugin/timezone.js";
+import { Router } from 'express';
+import Event from '../models/eventsModel.js';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
 import logError from '../../logError.js';
 import Member from '../models/memberModel.js';
 import { requireAdmin } from '../middleware/authMiddleware.js';
@@ -54,14 +53,15 @@ function buildEmailContent(event) {
     start ? `Date: ${dateStr}` : '',
     start ? `Time: ${startStr}${endStr ? ' — ' + endStr : ''}` : '',
     '',
-    `View event: ${(process.env.SITE_ORIGIN || 'http://localhost:3000')}/events/${event._id}`,
+    `View event: ${process.env.SITE_ORIGIN || 'http://localhost:3000'}/events/${event._id}`,
     '',
-    'See you there! 🙏'
+    'See you there! 🙏',
   ].filter(Boolean);
   const text = textParts.join('\n');
 
   // html - simple modern formatted template
-  const logoUrl = (process.env.SITE_ORIGIN || '').replace(/\/$/, '') + '/public/assets/SKK_Logo.png';
+  const logoUrl =
+    (process.env.SITE_ORIGIN || '').replace(/\/$/, '') + '/public/assets/SKK_Logo.png';
   const html = `
   <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px;">
     <div style="max-width:680px; margin:0 auto; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 6px 24px rgba(15,23,42,0.06);">
@@ -88,7 +88,7 @@ function buildEmailContent(event) {
         </div>
 
         <div style="text-align:center; margin-top:18px;">
-          <a href="${(process.env.SITE_ORIGIN || 'http://localhost:3000')}/events/${event._id}" style="display:inline-block; padding:12px 18px; border-radius:8px; background:linear-gradient(90deg,#1f8a31,#5dbb63); color:#fff; text-decoration:none; font-weight:600;">
+          <a href="${process.env.SITE_ORIGIN || 'http://localhost:3000'}/events/${event._id}" style="display:inline-block; padding:12px 18px; border-radius:8px; background:linear-gradient(90deg,#1f8a31,#5dbb63); color:#fff; text-decoration:none; font-weight:600;">
             ✅ View Event Details
           </a>
         </div>
@@ -113,7 +113,7 @@ function buildEmailContent(event) {
  * Small sleep helper for batch delay
  */
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -128,7 +128,7 @@ createEventRouter.get('/createEvent', requireAdmin, async (req, res) => {
     // render template (assumes view is src/views/createEvent.hbs)
     return res.render('createEvent', {
       members,
-      user: req.user || null
+      user: req.user || null,
     });
   } catch (err) {
     console.error('Error fetching members for createEvent', err);
@@ -153,7 +153,7 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
       endDateTime,
       expectedAttendees,
       sendAll,
-      customMembers // can be: undefined | single string | array of strings | JSON string (from hidden input)
+      customMembers, // can be: undefined | single string | array of strings | JSON string (from hidden input)
     } = req.body || {};
 
     // Basic validation
@@ -183,7 +183,7 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
       endDateTime: end,
       expectedAttendees: expectedAttendees ? Number(expectedAttendees) : 0,
       status: 'upcoming',
-      createdBy: req.user ? req.user._id : null
+      createdBy: req.user ? req.user._id : null,
     });
 
     await newEvent.save();
@@ -192,22 +192,24 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
     // Determine recipients depending on sendAll or customMembers
     let recipients = [];
     try {
-    if (sendAll === 'on' || sendAll === true || sendAll === 'true') {
+      if (sendAll === 'on' || sendAll === true || sendAll === 'true') {
         // send to all members with an emailAddress (use correct field name)
         const allMembers = await Member.find({ emailAddress: { $exists: true, $ne: '' } }).lean();
         // map to the field your model uses
-        recipients = allMembers.map(m => m.emailAddress).filter(Boolean);
-
-    } else if (customMembers) {
+        recipients = allMembers.map((m) => m.emailAddress).filter(Boolean);
+      } else if (customMembers) {
         // Normalize customMembers into an array
         let arr = [];
         if (typeof customMembers === 'string') {
           // could be a JSON string (e.g. "[]") or a single id/name string
           const trimmed = customMembers.trim();
-          if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+          if (
+            (trimmed.startsWith('[') && trimmed.endsWith(']')) ||
+            (trimmed.startsWith('"') && trimmed.endsWith('"'))
+          ) {
             try {
               arr = JSON.parse(trimmed);
-            } catch (e) {
+            } catch {
               // fallback: treat as single item
               arr = [trimmed];
             }
@@ -224,22 +226,25 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
         // If empty after normalization -> no recipients
         if (arr.length > 0) {
           // Detect whether array items look like Mongo ObjectIds (24 hex chars)
-          const looksLikeObjectId = val => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
+          const looksLikeObjectId = (val) =>
+            typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
 
-            if (arr.every(looksLikeObjectId)) {
+          if (arr.every(looksLikeObjectId)) {
             // treat as member ids
             const ids = arr;
             const selected = await Member.find({ _id: { $in: ids } }).lean();
             // your model uses `emailAddress`
-            recipients = selected.map(m => m.emailAddress).filter(Boolean);
+            recipients = selected.map((m) => m.emailAddress).filter(Boolean);
           } else {
             // treat as SIM names (e.g. ["Kids","Youth","YoAds","WOW","DIG"])
             const sims = arr;
             // your model uses `sim` and `emailAddress`
-            const selected = await Member.find({ sim: { $in: sims }, emailAddress: { $exists: true, $ne: '' } }).lean();
-            recipients = selected.map(m => m.emailAddress).filter(Boolean);
+            const selected = await Member.find({
+              sim: { $in: sims },
+              emailAddress: { $exists: true, $ne: '' },
+            }).lean();
+            recipients = selected.map((m) => m.emailAddress).filter(Boolean);
           }
-
         }
       }
     } catch (memberErr) {
@@ -250,10 +255,10 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
     // Debug logging: show resolved recipients info (helps confirm what's being used)
     console.log(`Resolved recipients count: ${recipients.length}`);
     if (recipients.length) {
-    // show up to 50 recipients for sanity-check
-    console.log('Sample recipients:', recipients.slice(0, 50));
+      // show up to 50 recipients for sanity-check
+      console.log('Sample recipients:', recipients.slice(0, 50));
     } else {
-    console.log('No recipients resolved (recipients array empty).');
+      console.log('No recipients resolved (recipients array empty).');
     }
 
     // If EMAIL host configured, send notifications via SMTP. Otherwise, log recipients (dev mode).
@@ -266,8 +271,8 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
         secure: String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'false') === 'true',
         auth: {
           user: process.env.SMTP_USER || process.env.EMAIL_USER,
-          pass: process.env.SMTP_PASS || process.env.EMAIL_PASS
-        }
+          pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
+        },
       });
 
       // verify transporter (log but don't fail the route if verify fails)
@@ -289,16 +294,18 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
       for (let i = 0; i < recipients.length; i += batchSize) {
         const batch = recipients.slice(i, i + batchSize);
         const message = {
-          from: process.env.EMAIL_FROM || (process.env.SMTP_USER || process.env.EMAIL_USER),
+          from: process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER,
           bcc: batch,
           subject,
           text,
-          html
+          html,
         };
 
         try {
           const info = await transporter.sendMail(message);
-          console.log(`Sent batch ${Math.floor(i / batchSize) + 1}: ${info.messageId} (recipients: ${batch.length})`);
+          console.log(
+            `Sent batch ${Math.floor(i / batchSize) + 1}: ${info.messageId} (recipients: ${batch.length})`
+          );
         } catch (sendErr) {
           console.error('Failed to send batch email', sendErr);
           await logError(sendErr, req);
@@ -322,7 +329,6 @@ createEventRouter.post('/createEvent', requireAdmin, async (req, res) => {
       return res.status(201).json({ message: successMessage, eventId: newEvent._id });
     }
     return res.redirect('/?success=1&msg=' + encodeURIComponent(successMessage));
-
   } catch (error) {
     console.log(`Error from model: ${error}`);
     await logError(error, req);

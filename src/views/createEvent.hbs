@@ -1,97 +1,144 @@
-<!-- src/views/createEvent.hbs --> 
-<div class="container mt-4">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <h3>Create Event</h3>
-            <form id="createEventForm" method="POST" action="/createEvent">
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="eventName">Event Name</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="text" id="eventName" name="eventName" required>
-                    </div>
+<!-- src/views/createEvent.hbs -->
+<div class='container mt-4'>
+  <div class='card shadow-sm'>
+    <div class='card-body'>
+      <h3>Create Event</h3>
+      <form id='createEventForm' method='POST' action='/createEvent'>
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='eventName'>Event Name</label>
+          <div class='col-sm-10'>
+            <input class='form-control' type='text' id='eventName' name='eventName' required />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='eventDescription'>Event Description</label>
+          <div class='col-sm-10'>
+            <textarea
+              class='form-control'
+              id='eventDescription'
+              name='eventDescription'
+              rows='4'
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Location field (added) -->
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='eventLocation'>Location</label>
+          <div class='col-sm-10'>
+            <input class='form-control' type='text' id='eventLocation' name='eventLocation' />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='eventType'>Event Type</label>
+          <div class='col-sm-10'>
+            <input
+              class='form-control'
+              type='text'
+              id='eventType'
+              name='eventType'
+              placeholder='e.g. Workshop, Meeting, Outreach'
+            />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='startDateTime'>Start</label>
+          <div class='col-sm-10'>
+            <input
+              class='form-control'
+              type='datetime-local'
+              id='startDateTime'
+              name='startDateTime'
+            />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='endDateTime'>End</label>
+          <div class='col-sm-10'>
+            <input class='form-control' type='datetime-local' id='endDateTime' name='endDateTime' />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label' for='expectedAttendees'>Expected Attendees</label>
+          <div class='col-sm-10'>
+            <input
+              class='form-control'
+              type='number'
+              id='expectedAttendees'
+              name='expectedAttendees'
+              min='0'
+            />
+          </div>
+        </div>
+
+        <div class='mt-3 row'>
+          <label class='col-sm-2 form-label'>Notify</label>
+          <div class='col-sm-10'>
+            <div class='form-check'>
+              <input class='form-check-input' type='checkbox' id='sendAll' name='sendAll' />
+              <label class='form-check-label' for='sendAll'>Send to all members</label>
+            </div>
+
+            <div id='customMembers' class='mt-2'>
+              <label>Custom (SIM groups)</label>
+              <div class='member-list'>
+                <!-- Replace individual member checkboxes with SIM group checkboxes -->
+                <div class='form-check'>
+                  <input
+                    class='form-check-input sim-checkbox'
+                    type='checkbox'
+                    data-sim='Kids'
+                    id='sim-Kids'
+                  />
+                  <label class='form-check-label' for='sim-Kids'>Kids</label>
+                </div>
+                <div class='form-check'>
+                  <input
+                    class='form-check-input sim-checkbox'
+                    type='checkbox'
+                    data-sim='Youth'
+                    id='sim-Youth'
+                  />
+                  <label class='form-check-label' for='sim-Youth'>Youth</label>
+                </div>
+                <div class='form-check'>
+                  <input
+                    class='form-check-input sim-checkbox'
+                    type='checkbox'
+                    data-sim='YoAds'
+                    id='sim-YoAds'
+                  />
+                  <label class='form-check-label' for='sim-YoAds'>YoAds</label>
+                </div>
+                <div class='form-check'>
+                  <input
+                    class='form-check-input sim-checkbox'
+                    type='checkbox'
+                    data-sim='WOW'
+                    id='sim-WOW'
+                  />
+                  <label class='form-check-label' for='sim-WOW'>WOW</label>
+                </div>
+                <div class='form-check'>
+                  <input
+                    class='form-check-input sim-checkbox'
+                    type='checkbox'
+                    data-sim='DIG'
+                    id='sim-DIG'
+                  />
+                  <label class='form-check-label' for='sim-DIG'>DIG</label>
                 </div>
 
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="eventDescription">Event Description</label>
-                    <div class="col-sm-10">
-                        <textarea class="form-control" id="eventDescription" name="eventDescription" rows="4"></textarea>
-                    </div>
-                </div>
-
-                <!-- Location field (added) -->
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="eventLocation">Location</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="text" id="eventLocation" name="eventLocation">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="eventType">Event Type</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="text" id="eventType" name="eventType" placeholder="e.g. Workshop, Meeting, Outreach">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="startDateTime">Start</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="datetime-local" id="startDateTime" name="startDateTime">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="endDateTime">End</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="datetime-local" id="endDateTime" name="endDateTime">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label" for="expectedAttendees">Expected Attendees</label>
-                    <div class="col-sm-10">
-                        <input class="form-control" type="number" id="expectedAttendees" name="expectedAttendees" min="0">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <label class="col-sm-2 form-label">Notify</label>
-                    <div class="col-sm-10">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="sendAll" name="sendAll">
-                            <label class="form-check-label" for="sendAll">Send to all members</label>
-                        </div>
-
-                        <div id="customMembers" class="mt-2">
-                            <label>Custom (SIM groups)</label>
-                            <div class="member-list">
-                                <!-- Replace individual member checkboxes with SIM group checkboxes -->
-                                <div class="form-check">
-                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="Kids" id="sim-Kids">
-                                    <label class="form-check-label" for="sim-Kids">Kids</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="Youth" id="sim-Youth">
-                                    <label class="form-check-label" for="sim-Youth">Youth</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="YoAds" id="sim-YoAds">
-                                    <label class="form-check-label" for="sim-YoAds">YoAds</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="WOW" id="sim-WOW">
-                                    <label class="form-check-label" for="sim-WOW">WOW</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input sim-checkbox" type="checkbox" data-sim="DIG" id="sim-DIG">
-                                    <label class="form-check-label" for="sim-DIG">DIG</label>
-                                </div>
-
-                                <!-- If you still want to show the raw member list for reference uncomment the block below
+                <!-- If you still want to show the raw member list for reference uncomment the block below
                                      but we do NOT submit individual members anymore per your request.
                                      Keep it commented to avoid changing behavior.
                                 -->
-                                {{!--
+                {{!--
                                 {{#if members}}
                                     {{#each members}}
                                         <div class="form-check">
@@ -102,65 +149,38 @@
                                 {{/if}}
                                 --}}
 
-                            </div>
-                        </div>
+              </div>
+            </div>
 
-                        <!-- hidden input to send selected SIM groups as the original `customMembers` field (server expects customMembers) -->
-                        <input type="hidden" id="customMembersInput" name="customMembers" value="[]">
-                    </div>
-                </div>
-
-                <div class="mt-3 row">
-                    <div class="col-sm-12 text-end">
-                        <button id="createEventBtn" class="btn btn-primary" type="submit">Create Event</button>
-                    </div>
-                </div>
-            </form>
+            <!-- hidden input to send selected SIM groups as the original `customMembers` field (server expects customMembers) -->
+            <input type='hidden' id='customMembersInput' name='customMembers' value='[]' />
+          </div>
         </div>
+
+        <div class='mt-3 row'>
+          <div class='col-sm-12 text-end'>
+            <button id='createEventBtn' class='btn btn-primary' type='submit'>Create Event</button>
+          </div>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script>
   // client-side behavior: ensure customMembers (SIM list) hidden input is updated before submit
-  (function () {
-    const sendAllEl = document.getElementById('sendAll');
-    const simCheckboxes = document.querySelectorAll('.sim-checkbox');
-    const customHidden = document.getElementById('customMembersInput');
-    const form = document.getElementById('createEventForm');
-
-    function updateHidden() {
-      const selectedSIMs = Array.from(simCheckboxes)
-        .filter(cb => cb.checked)
-        .map(cb => cb.dataset.sim);
-      customHidden.value = JSON.stringify(selectedSIMs);
-    }
-
-    // If sendAll is checked, clear SIM checkboxes (we will send to all instead)
-    sendAllEl && sendAllEl.addEventListener('change', () => {
-      if (sendAllEl.checked) {
-        simCheckboxes.forEach(cb => cb.checked = false);
-      }
-      updateHidden();
-    });
-
-    simCheckboxes.forEach(cb => {
-      cb.addEventListener('change', () => {
-        // if any SIM is checked, uncheck sendAll because custom selection takes precedence
-        if (cb.checked && sendAllEl) {
-          sendAllEl.checked = false;
-        }
-        updateHidden();
-      });
-    });
-
-    // Update hidden input on submit (last chance)
-    form.addEventListener('submit', (e) => {
-      updateHidden();
-      // no preventDefault here — we want the form to submit normally as before
-      // ensure at least the hidden input is set
-    });
-
-    // initialize hidden with default (no SIMs selected)
-    updateHidden();
-  })();
+  (function () { const sendAllEl = document.getElementById('sendAll'); const simCheckboxes =
+  document.querySelectorAll('.sim-checkbox'); const customHidden =
+  document.getElementById('customMembersInput'); const form =
+  document.getElementById('createEventForm'); function updateHidden() { const selectedSIMs =
+  Array.from(simCheckboxes) .filter(cb => cb.checked) .map(cb => cb.dataset.sim); customHidden.value
+  = JSON.stringify(selectedSIMs); } // If sendAll is checked, clear SIM checkboxes (we will send to
+  all instead) sendAllEl && sendAllEl.addEventListener('change', () => { if (sendAllEl.checked) {
+  simCheckboxes.forEach(cb => cb.checked = false); } updateHidden(); }); simCheckboxes.forEach(cb =>
+  { cb.addEventListener('change', () => { // if any SIM is checked, uncheck sendAll because custom
+  selection takes precedence if (cb.checked && sendAllEl) { sendAllEl.checked = false; }
+  updateHidden(); }); }); // Update hidden input on submit (last chance)
+  form.addEventListener('submit', (e) => { updateHidden(); // no preventDefault here — we want the
+  form to submit normally as before // ensure at least the hidden input is set }); // initialize
+  hidden with default (no SIMs selected) updateHidden(); })();
 </script>

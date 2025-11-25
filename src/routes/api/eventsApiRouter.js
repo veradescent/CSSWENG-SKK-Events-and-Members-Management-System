@@ -37,13 +37,14 @@ router.get('/events', async (req, res) => {
     // Find events that intersect the requested range
     // (event.start <= end && event.end >= start)
     const events = await Event.find({
-      $or: [
-        { startDateTime: { $lte: endDateUTC }, endDateTime: { $gte: startDateUTC } }
-      ]
-    }).sort({ startDateTime: 1 }).lean().exec();
+      $or: [{ startDateTime: { $lte: endDateUTC }, endDateTime: { $gte: startDateUTC } }],
+    })
+      .sort({ startDateTime: 1 })
+      .lean()
+      .exec();
 
     // Transform to client-friendly format: convert UTC -> Asia/Manila ISO strings
-    const transformed = events.map(ev => {
+    const transformed = events.map((ev) => {
       const startManila = dayjs(ev.startDateTime).tz('Asia/Manila').format();
       const endManila = dayjs(ev.endDateTime).tz('Asia/Manila').format();
       return {
@@ -138,14 +139,18 @@ router.put('/events/:id', async (req, res) => {
     const startUTC = dayjs.tz(manilaStart, 'Asia/Manila').utc().toDate();
     const endUTC = dayjs.tz(manilaEnd, 'Asia/Manila').utc().toDate();
 
-    const updated = await Event.findByIdAndUpdate(req.params.id, {
-      eventName: title,
-      eventDescription: description,
-      startDateTime: startUTC,
-      endDateTime: endUTC,
-      expectedAttendees: Number(expectedAttendees) || 0,
-      type,
-    }, { new: true }).lean();
+    const updated = await Event.findByIdAndUpdate(
+      req.params.id,
+      {
+        eventName: title,
+        eventDescription: description,
+        startDateTime: startUTC,
+        endDateTime: endUTC,
+        expectedAttendees: Number(expectedAttendees) || 0,
+        type,
+      },
+      { new: true }
+    ).lean();
 
     if (!updated) return res.status(404).json({ success: false, message: 'Event not found' });
     return res.json({ success: true, event: updated });

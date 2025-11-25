@@ -15,12 +15,14 @@ describe('logError', () => {
     await expect(logError(err, fakeReq, { create: mockCreate })).resolves.toBeUndefined();
 
     expect(mockCreate).toHaveBeenCalledTimes(1);
-    expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
-      message: 'Unit test error',
-      stack: expect.any(String),
-      route: '/test-route',
-      method: 'POST'
-    }));
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Unit test error',
+        stack: expect.any(String),
+        route: '/test-route',
+        method: 'POST',
+      })
+    );
   });
 
   test('does not throw when ErrorLog.create rejects', async () => {
@@ -28,10 +30,9 @@ describe('logError', () => {
 
     const fakeReq = { originalUrl: '/fail-route', method: 'GET' };
     const err = new Error('Another test error');
-    
+
     // logError should catch internal errors and not reject
     await expect(logError(err, fakeReq, { create: mockCreate })).resolves.toBeUndefined();
     expect(mockCreate).toHaveBeenCalled();
   });
 });
-

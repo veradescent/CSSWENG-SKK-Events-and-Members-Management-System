@@ -1,25 +1,9 @@
-import { Router } from "express";
-import Member from "../models/memberModel.js";
+import { Router } from 'express';
+import Member from '../models/memberModel.js';
 import logError from '../../logError.js';
 import { requireAdmin } from '../middleware/authMiddleware.js';
 
 const memDBRouter = Router();
-
-//Admin Check Func
-function isAdmin(req, res, next) {
-  if (!req.user) { 
-    // not logged in
-    return res.redirect('/login');
-  }
-
-  //changeable cond for checking admin
-  if (req.user.role !== 'admin') {
-    // logged in but not admin
-    return res.status(403).send('Access denied: Admins only');
-  }
-
-  next();
-}
 
 //GET to display db
 // GET to display db with search, filter, and sort
@@ -33,90 +17,86 @@ memDBRouter.get('/member-database', requireAdmin, async (req, res) => {
       query.$or = [
         { fullName: { $regex: search, $options: 'i' } },
         { emailAddress: { $regex: search, $options: 'i' } },
-        { contactNumber: { $regex: search, $options: 'i' } }
+        { contactNumber: { $regex: search, $options: 'i' } },
       ];
     }
 
     // 🧭 Filters
-    if (areaChurch && areaChurch !== "All") query.areaChurch = areaChurch;
-    if (sim && sim !== "All") query.sim = sim;
+    if (areaChurch && areaChurch !== 'All') query.areaChurch = areaChurch;
+    if (sim && sim !== 'All') query.sim = sim;
 
     // 🔢 Sorting options
-    let sortOption = {};
+    const sortOption = {};
     switch (sort) {
-      case "name_asc":
+      case 'name_asc':
         sortOption.fullName = 1;
         break;
-      case "name_desc":
+      case 'name_desc':
         sortOption.fullName = -1;
         break;
-      case "area_asc":
+      case 'area_asc':
         sortOption.areaChurch = 1;
         break;
-      case "area_desc":
+      case 'area_desc':
         sortOption.areaChurch = -1;
         break;
-      case "sim_asc":
+      case 'sim_asc':
         sortOption.sim = 1;
         break;
-      case "sim_desc":
+      case 'sim_desc':
         sortOption.sim = -1;
         break;
       default:
         sortOption.fullName = 1; // default sorting
     }
 
-    const allMembers = await Member.find(query)
-      .sort(sortOption)
-      .lean()
-      .exec();
+    const allMembers = await Member.find(query).sort(sortOption).lean().exec();
 
     res.render('memberDatabase', {
       members: allMembers,
-      title: "Member Database",
+      title: 'Member Database',
       filters: { search, areaChurch, sim, sort },
-      user: req.user  
+      user: req.user,
     });
   } catch (error) {
-    console.error("Error fetching members:", error);
+    console.error('Error fetching members:', error);
     await logError(error, req);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send('Internal Server Error');
   }
 });
 
-
 //DELETE by id
-memDBRouter.delete("/member-database/:id", requireAdmin, async (req, res) => {
+memDBRouter.delete('/member-database/:id', requireAdmin, async (req, res) => {
   try {
     const deletedMember = await Member.findByIdAndDelete(req.params.id);
     if (!deletedMember) {
-      return res.status(404).send("Member not found");
+      return res.status(404).send('Member not found');
     }
-    res.status(200).send("Member deleted successfully");
+    res.status(200).send('Member deleted successfully');
   } catch (error) {
-    console.error("Error deleting member:", error);
+    console.error('Error deleting member:', error);
     await logError(error, req);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send('Internal Server Error');
   }
 });
 
 // POST /addMember — return validation errors (don't silently `return`)
 memDBRouter.post('/addMember', requireAdmin, async (req, res) => {
   try {
-    console.log("/addMember req received");
+    console.log('/addMember req received');
     const newMember = new Member({
       fullName: req.body.fullName,
       areaChurch: req.body.areaChurch,
       sim: req.body.sim,
       contactNumber: req.body.contactNumber,
-      emailAddress: req.body.emailAddress
+      emailAddress: req.body.emailAddress,
     });
 
     await newMember.save(); // let validation errors bubble to catch
 
     return res.status(201).json({
       message: 'Member created successfully',
-      id: newMember._id
+      id: newMember._id,
     });
   } catch (error) {
     console.error(`POST /addMember error: ${error}`);
@@ -133,7 +113,7 @@ memDBRouter.post('/addMember', requireAdmin, async (req, res) => {
 
     return res.status(500).json({
       message: 'Failed to create member',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -148,20 +128,22 @@ memDBRouter.put('/editMember/:id', requireAdmin, async (req, res) => {
       areaChurch: req.body.areaChurch,
       sim: req.body.sim,
       contactNumber: req.body.contactNumber,
-      emailAddress: req.body.emailAddress
+      emailAddress: req.body.emailAddress,
     };
 
     const mem = await Member.findOneAndUpdate(filter, update, {
       new: true,
       runValidators: true,
-      context: 'query'
-    }).lean().exec();
+      context: 'query',
+    })
+      .lean()
+      .exec();
 
     if (!mem) return res.status(404).json({ message: 'Member not found' });
 
     return res.status(200).json({
       message: 'DB updated successfully',
-      member: mem
+      member: mem,
     });
   } catch (error) {
     console.error('PUT /editMember/:id error:', error);
@@ -177,7 +159,7 @@ memDBRouter.put('/editMember/:id', requireAdmin, async (req, res) => {
 
     return res.status(500).json({
       error: 'Failed to update member',
-      details: error.message
+      details: error.message,
     });
   }
 });
