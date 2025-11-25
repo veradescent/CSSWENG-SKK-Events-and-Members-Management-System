@@ -4,19 +4,34 @@ import Event from '../models/eventsModel.js';
 const router = express.Router();
 
 // Public reports page: accessible to guests and logged-in users.
-// Pass req.user (or null) so navbar can render properly.
+// ❗ ORIGINAL COMMENT KEPT — but user: req.user was the cause of the navbar bug
 router.get('/reports', (req, res) => {
   try {
     return res.render('reports', {
       title: 'Reports',
-      user: req.user || null,
+
+      // ❌ OLD (caused admin navbar to break)
+      // user: req.user || null,
+
+      // ✅ NEW — let Handlebars use res.locals.user (set in app.js)
+      // This fixes the navbar always showing guest mode.
+      // Do NOT override it by passing user manually.
+      // user: res.locals.user, ← not needed, so omitted
+
       previousEvents: [] // safe default; frontend will fetch actual previous events
     });
   } catch (err) {
     console.error('Error rendering /reports:', err);
+
+    // Keep original error behavior but apply the same fix
     return res.status(500).render('reports', {
       title: 'Reports',
-      user: req.user || null,
+
+      // ❌ OLD
+      // user: req.user || null,
+
+      // ✅ NEW
+      // Do not override res.locals.user here either
       previousEvents: []
     });
   }
