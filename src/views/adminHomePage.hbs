@@ -45,11 +45,11 @@
                 {{/if}}
               </div>
 
-              <div style="width:120px; margin-left:12px; flex:0 0 120px;">
+              <div class="event-thumb" style="margin-left:12px;">
                 {{!-- FIXED FALLBACK IMAGE (SKK_Logo.png) --}}
-                <img src="{{#if image}}{{image}}{{else}}/assets/SKK_Logo.png{{/if}}" 
-                     alt="{{eventName}}" 
-                     style="width:100%; height:72px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">
+                 <img src="{{#if image}}{{image}}{{else}}/assets/SKK_Logo.png{{/if}}" 
+                   alt="{{eventName}}" 
+                   class="event-thumb-img">
               </div>
 
             </div>
@@ -71,32 +71,4 @@
   {{/if}}
 {{/if}}
 
-<!-- contact us -->
-<div class="justify-content-center align-items-center mt-3 row">
-    <div class="text-center col-sm-3">
-        <h2 class="fw-bold display-4">Contact Us</h2>
-    </div>
-    <div class="col-sm-6">
-        <form>
-            <div class="mt-3 row">
-                <label class="col-sm-2 form-label" for="comment">Comment</label>
-                <div class="col-sm-10">
-                    <input class="form-control" type="text" id="comment">
-                </div>
-            </div>
-            <div class="mt-3 row">
-                <label class="col-sm-2 form-label" for="name">Name</label>
-                <div class="col-sm-10">
-                    <input class="form-control" type="text" id="name">
-                </div>
-            </div>
-            <div class="mt-3 row">
-                <label class="col-sm-2 form-label" for="email">Email</label>
-                <div class="col-sm-10">
-                    <input class="form-control" type="email" id="email">
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 </div>

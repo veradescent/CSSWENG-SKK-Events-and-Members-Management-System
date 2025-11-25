@@ -14,19 +14,19 @@
   }
 
   .login-box {
-    width: 600px;
-    height: 700px;
-    max-width: calc(100% - 40px);
+    width: 90%;
+    max-width: 600px;
+    height: auto;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(20,20,40,0.08);
-    padding: 1in; /* 1 inch padding from all sides as requested */
+    padding: 1.5rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    position: relative; /* for absolute-positioned button */
+    position: relative; 
   }
 
   .login-box h2 {
@@ -58,7 +58,7 @@
     outline: none;
   }
 
-  form#loginForm { width: 100%; padding-bottom: 140px; }
+  form#loginForm { width: 100%; padding-bottom: 6rem; }
 
   .form-group input:focus {
     border-color: #c7d2fe;
@@ -66,7 +66,7 @@
   }
 
 
-  .login-cta { position: absolute; bottom: 1in; left: 50%; transform: translateX(-50%); width: 100%; display:flex; justify-content:center; }
+  .login-cta { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); width: 100%; display:flex; justify-content:center; }
 
   .login-btn {
     background: #e5e7eb; 
@@ -74,7 +74,8 @@
     padding: 12px 28px;
     border-radius: 999px;
     border: none;
-    width: 260px;
+    width: 60%;
+    max-width: 320px;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(16,24,40,0.06);
@@ -85,6 +86,7 @@
   /* small responsive tweak */
   @media (max-width: 480px) {
     .login-box { padding: 20px; }
+    .login-btn { width: 90%; max-width: none; }
   }
 </style>
 

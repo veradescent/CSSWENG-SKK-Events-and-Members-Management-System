@@ -1,29 +1,35 @@
-<nav class="navbar navbar-expand-lg" style="padding: 0.4rem 1rem;">
+<nav class="navbar navbar-expand-lg" role="navigation">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center gap-1" href="/">
-      <img src="/assets/SKK_Logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top">
-      <span class="fw-bold fs-4" style="color: #A1C14B;">SKK</span>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <img src="/assets/SKK_Logo.png" alt="Logo" class="site-logo d-inline-block align-text-top">
+      <span class="fw-bold site-brand">SKK</span>
     </a>
 
-    <div class="d-flex align-items-center">
-      <a href="/" class="text-decoration-none me-5 fs-5">Home</a>
-      <a href="/calendar" class="text-decoration-none me-5 fs-5">Calendar</a>
-      <a href="/reports" class="text-decoration-none me-5 fs-5">Reports</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      {{!-- ADMIN ONLY --}}
-      {{#if (eq user.role 'admin')}}
-        <a href="/member-database" class="text-decoration-none me-5 fs-5">Database</a>
-      {{/if}}
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/calendar">Calendar</a></li>
+        <li class="nav-item"><a class="nav-link" href="/reports">Reports</a></li>
 
-      {{!-- SHOW USERNAME + LOGOUT IF LOGGED IN --}}
-      {{#if user}}
-        <span class="text-decoration-none me-5 fs-5">Hi, {{user.username}}</span>
-        <form method="post" action="/logout" style="display:inline;">
-          <button class="btn btn-link text-danger fw-bold fs-5 p-0">Logout</button>
-        </form>
-      {{else}}
-        <a href="/login" class="text-decoration-none me-5 fs-5">Login</a>
-      {{/if}}
+        {{#if (eq user.role 'admin')}}
+          <li class="nav-item"><a class="nav-link" href="/member-database">Database</a></li>
+        {{/if}}
+
+        {{#if user}}
+          <li class="nav-item d-lg-flex align-items-center"><span class="nav-text">Hi, {{user.username}}</span></li>
+          <li class="nav-item">
+            <form method="post" action="/logout" class="d-inline">
+              <button class="btn btn-link nav-link text-danger p-0">Logout</button>
+            </form>
+          </li>
+        {{else}}
+          <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+        {{/if}}
+      </ul>
     </div>
   </div>
 </nav>

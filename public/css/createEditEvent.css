@@ -14,9 +14,10 @@ body {
 .container-box {
     background-color: #e8e8e8;
     border-radius: 10px;
-    padding: 35px 50px;
-    width: 750px;
-    margin: 50px auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 750px;
+    margin: 3rem auto;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.15);
 }
 
@@ -135,4 +136,14 @@ label {
 .selected-count {
     color: #6c757d;
     font-size: 0.9em;
+}
+
+/* smaller inline select */
+.custom-select-small {
+    width: 100%;
+    max-width: 220px;
+    display: none;
+}
+@media (max-width: 600px) {
+    .custom-select-small { max-width: 100%; }
 }

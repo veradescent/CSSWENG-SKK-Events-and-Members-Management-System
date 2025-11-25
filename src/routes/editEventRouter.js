@@ -25,16 +25,20 @@ editEventRouter.get('/editEvent/:id', requireAdmin, async (req, res) => {
             return res.status(404).send('Event not found');
         }
 
-        const formDate = dayjs(event.startDateTime).tz('Asia/Manila').format('YYYY-MM-DD');
-        const formStartTime = dayjs(event.startDateTime).tz('Asia/Manila').format('HH:mm');
-        const formEndTime = dayjs(event.endDateTime).tz('Asia/Manila').format('HH:mm');
+        const formDate = event.startDateTime ? dayjs(event.startDateTime).tz('Asia/Manila').format('YYYY-MM-DD') : '';
+        const formStartTime = event.startDateTime ? dayjs(event.startDateTime).tz('Asia/Manila').format('HH:mm') : '';
+        const formEndTime = event.endDateTime ? dayjs(event.endDateTime).tz('Asia/Manila').format('HH:mm') : '';
+        const formStartISO = event.startDateTime ? dayjs(event.startDateTime).tz('Asia/Manila').format('YYYY-MM-DDTHH:mm') : '';
+        const formEndISO = event.endDateTime ? dayjs(event.endDateTime).tz('Asia/Manila').format('YYYY-MM-DDTHH:mm') : '';
 
         return res.render('editEvent', {
             title: "Edit Event",
             event,
             formDate,
             formStartTime,
-            formEndTime
+            formEndTime,
+            formStartISO,
+            formEndISO,
         });
     } catch (err) {
         console.error('Error loading event for editing:', err);

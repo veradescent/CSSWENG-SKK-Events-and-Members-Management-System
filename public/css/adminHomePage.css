@@ -1,17 +1,19 @@
 .content {
-    height: 200px;
-    width: 200px;
+    width: 100%;
+    max-width: 200px;
+    height: auto;
     background-color: #A9A9A9;
 }
 
 .announcement {
-    height: 500px;
-    width: auto;
+    width: 100%;
+    min-height: 300px;
     background-color: #A9A9A9;
 }
 
 .card {
-    width: 350px;
+    width: 100%;
+    max-width: 350px;
 }
 
 a {
@@ -31,6 +33,18 @@ a {
 .event-card-wrapper {
     flex: 0 0 calc(33.333% - 16px);
     margin-right: 24px;
+}
+
+.event-thumb {
+    flex: 0 0 120px;
+    width: 120px;
+}
+.event-thumb-img {
+    width: 100%;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
 }
 
 /* .card-body p { */
@@ -77,6 +91,7 @@ a {
     .event-card-wrapper {
         flex: 0 0 calc(50% - 12px);
     }
+    .event-thumb { flex: 0 0 100px; width: 100px; }
 }
 
 @media (max-width: 576px) {

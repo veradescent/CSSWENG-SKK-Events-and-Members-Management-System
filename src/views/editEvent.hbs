@@ -1,100 +1,95 @@
 
-<head>
-  <link rel="stylesheet" href="/css/createEditEvent.css">
-  <script defer src="/js/editEvent.js"></script>
-</head>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h3>Edit Event</h3>
 
-<a href="/" class="back-link">&lt; Back</a>
+            <form id="editEventForm">
+                <input type="hidden" id="eventId" value="{{event._id}}">
 
-<div class="container-box">
-    <h1>Edit Event</h1>
-
-    <!-- Title -->
-    <div class="mb-3">
-        <label>Title Name</label>
-        <input type="text" id="eventTitle" class="form-control" placeholder="Enter title" value="{{event.eventName}}">
-        <input type="hidden" id="eventId" value="{{event._id}}">
-    </div>
-
-    <!-- Description -->
-    <div class="mb-3">
-        <label>Description</label>
-        <input type="text" id="eventDescription" class="form-control" placeholder="Input text here" value="{{event.eventDescription}}">
-    </div>
-
-    <!-- upload image here-->
-    <div class="mb-3 text-center">
-        <div id="imagePreview" class="image-box">
-        Sample Announcement Image<br>and Captions
-        </div>
-        <input type="file" id="eventImage" accept="image/*" class="form-control d-none">
-        <button id="editImageBtn" class="btn btn-edit">Edit image</button>
-    </div>
-
-    <!-- Event Details -->
-    <div class="mt-4">
-        <label class="fw-bold d-block">Event details:</label>
-        <div class="row g-3 align-items-center">
-        <div class="col-md-6">
-            <label class="form-label">No. of Attendees:</label>
-            <input type="number" id="eventAttendees" class="form-control" placeholder="Enter number" value="{{event.expectedAttendees}}">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Type:</label>
-            <select id="eventType" class="form-select">
-            <option value="">Select type</option>
-            <option value="Meeting" {{#if (eq event.type "Meeting")}}selected{{/if}}>Meeting</option>
-            <option value="Workshop" {{#if (eq event.type "Workshop")}}selected{{/if}}>Workshop</option>
-            <option value="Social" {{#if (eq event.type "Social")}}selected{{/if}}>Social</option>
-            </select>
-        </div>
-        </div>
-
-        <div class="row g-3 mt-2">
-            <div class="col-md-6">
-                <label class="form-label">Date:</label>
-                <input type="date" id="eventDate" class="form-control" value="{{formDate}}">
-            </div>
-            <div class="row g-3 mt-2 align-items-center">
-                <div class="col-md-6">
-                    <label class="form-label">Time From:</label>
-                    <input type="time" id="eventTimeFrom" class="form-control" value="{{formStartTime}}">
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="eventTitle">Event Name</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" id="eventTitle" name="title" value="{{event.eventName}}" required>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Time To:</label>
-                    <input type="time" id="eventTimeTo" class="form-control" value="{{formEndTime}}">
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="eventDescription">Event Description</label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control" id="eventDescription" name="description" rows="3">{{event.eventDescription}}</textarea>
+                    </div>
                 </div>
-            </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="eventLocation">Location</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" id="eventLocation" name="location" value="{{event.location}}">
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="eventType">Event Type</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" id="eventType" name="type" value="{{event.type}}" placeholder="e.g. Workshop, Meeting, Outreach">
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="startDateTime">Start</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="datetime-local" id="startDateTime" name="startDateTime" value="{{formStartISO}}">
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="endDateTime">End</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="datetime-local" id="endDateTime" name="endDateTime" value="{{formEndISO}}">
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label" for="eventAttendees">Expected Attendees</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="number" id="eventAttendees" name="attendees" min="0" value="{{event.expectedAttendees}}">
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <label class="col-sm-2 form-label">Notify</label>
+                    <div class="col-sm-10">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sendAll">
+                            <label class="form-check-label" for="sendAll">Send to all members</label>
+                        </div>
+
+                        <div id="customMembers" class="mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="custom">
+                                <label class="form-check-label ms-2" for="custom">Custom</label>
+                            </div>
+                            <div class="member-list mt-2">
+                                <!-- keep existing select for small lists as fallback -->
+                                <select id="customSelect" class="form-select custom-select-small" style="display:none;">
+                                    <option>Select member</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 row">
+                    <div class="col-sm-12 text-end">
+                        <button id="cancelBtn" type="button" class="btn btn-secondary">Cancel</button>
+                        <button id="deleteBtn" type="button" class="btn btn-danger">Delete</button>
+                        <button id="editBtn" type="button" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </div>
-
-    <!-- Send Invitation -->
-    <div class="mt-4">
-        <label class="fw-bold d-block">Send invitation:</label>
-
-        <div class="d-flex align-items-center flex-wrap gap-3">
-            <div>
-                <input type="checkbox" id="sendAll">
-                <label for="sendAll">Send to all members</label>
-            </div>
-
-            <div class="d-flex align-items-center">
-                <input type="checkbox" id="custom">
-                <label for="custom" class="ms-2 me-2">Custom:</label>
-                <select id="customSelect" class="form-select" style="width: 160px; display: none;">
-                <option>Select member</option>
-                <option>John Doe</option>
-                <option>Jane Smith</option>
-                <option>Michael Lee</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <!-- Buttons -->
-    <div class="bottom-buttons">
-        <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-        <button class="btn btn-danger" id="deleteBtn">Delete</button>
-        <button class="btn btn-warning" id="editBtn">Edit</button>
     </div>
 </div>
+
+<script defer src="/js/editEvent.js"></script>
 
