@@ -1,18 +1,16 @@
 // src/routes/reports.js
 import express from 'express';
-import Event from '../models/eventsModel.js'; // ensure this path matches your project
+import Event from '../models/eventsModel.js';
 const router = express.Router();
 
-// Render reports page (public). Do NOT force authentication here so guests can view.
-// If a user is logged in, req.user will still be available and passed to the template.
+// Public reports page: accessible to guests and logged-in users.
+// Pass req.user (or null) so navbar can render properly.
 router.get('/reports', (req, res) => {
   try {
     return res.render('reports', {
       title: 'Reports',
       user: req.user || null,
-      // Provide an empty array so the template's {{#each previousEvents}} is safe.
-      // If you prefer to server-render previous events for the current month, replace [] with a DB query.
-      previousEvents: []
+      previousEvents: [] // safe default; frontend will fetch actual previous events
     });
   } catch (err) {
     console.error('Error rendering /reports:', err);
@@ -24,7 +22,7 @@ router.get('/reports', (req, res) => {
   }
 });
 
-// API: fetch previous events for a selected month (keeps original behavior)
+// API: fetch previous events (same behavior as before)
 router.get('/api/reports/previous', async (req, res) => {
   try {
     const { year, month } = req.query;
@@ -32,17 +30,14 @@ router.get('/api/reports/previous', async (req, res) => {
       return res.json({ success: false, events: [] });
     }
 
-    // months in JS Date are 0-indexed; frontend sends currentDate.getMonth()
     const start = new Date(Number(year), Number(month), 1, 0, 0, 0, 0);
     const end = new Date(Number(year), Number(month) + 1, 0, 23, 59, 59, 999);
-
-    // ensure we only return events that already occurred (start before now)
     const now = new Date();
 
     const events = await Event.find({
       $and: [
         { startDateTime: { $gte: start, $lte: end } }, // inside month range
-        { startDateTime: { $lt: now } }               // already past (start before now)
+        { startDateTime: { $lt: now } }               // already past
       ]
     })
       .sort({ startDateTime: -1 })
@@ -63,7 +58,6 @@ router.get('/api/reports/previous', async (req, res) => {
     }));
 
     return res.json({ success: true, events: formatted });
-
   } catch (err) {
     console.error('Error in /api/reports/previous:', err);
     return res.json({ success: false, events: [] });
