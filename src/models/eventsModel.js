@@ -54,7 +54,8 @@ const eventSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+   minutesLink: { type: String, default: '' }
 });
 
 // If the original model had extra indexes or methods, preserve them here.

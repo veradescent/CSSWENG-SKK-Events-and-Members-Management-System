@@ -8,9 +8,10 @@ import router from "./src/routes/index.js";
 import ErrorLog from './src/models/errorLogs.js';
 import cookieParser from 'cookie-parser';
 import eventsRouter from './src/routes/eventsRouter.js';
-import jwt from 'jsonwebtoken';   // ✅ add this
+import jwt from 'jsonwebtoken';
 import previousEventsRouter from './src/routes/api/previousEventsRouter.js';
 import memberDBRouter from './src/routes/memberDatabase.js'
+import reportsRouter from './src/routes/reportsRouter.js';
 // Setup Paths
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,12 +22,6 @@ const app = express();
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
-app.use(express.static(__dirname + '/public'));
-app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
-app.use('/api/events/previous', previousEventsRouter);
-app.use('/events', eventsRouter);
-app.use('/', memberDBRouter);
-
 
 // MIDDLEWARE (USER CONDITIONS)
 const TOKEN_NAME = 'auth_token';
@@ -42,13 +37,31 @@ app.use((req, res, next) => {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    res.locals.user = payload;        // user is now available in ALL .hbs templates
+
+    // Normalize user for templates and other middleware:
+    // keep original payload fields, but expose isAdmin for Handlebars checks.
+    const normalizedUser = {
+      ...payload,
+      isAdmin: (payload?.role === 'admin')
+    };
+
+    // Make the normalized user available to templates (res.locals) and to req.user
+    res.locals.user = normalizedUser;   // user is now available in ALL .hbs templates
+    req.user = payload;                 // keep original payload on req.user for existing auth logic
+
   } catch (err) {
     res.locals.user = null;
   }
 
   next();
 });
+
+app.use(express.static(__dirname + '/public'));
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+app.use('/api/events/previous', previousEventsRouter);
+app.use('/events', eventsRouter);
+app.use('/', memberDBRouter);
+app.use('/', reportsRouter); 
 
 // Handlebars
 app.engine('hbs', handlebars.engine({

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -237,7 +237,7 @@
   </style>
 </head>
 
-<body>
+<body data-is-admin="{{#if user}}{{#if user.isAdmin}}1{{else}}0{{/if}}{{else}}0{{/if}}">
   <h2 class="page-title">SKK Reports</h2>
 
   <div class="reports-container">
@@ -297,7 +297,8 @@
              data-start="{{startDateTime}}"
              data-end="{{endDateTime}}"
              data-attendees="{{expectedAttendees}}"
-             data-type="{{type}}">
+             data-type="{{type}}"
+             data-minutes="{{minutesLink}}">
           <small style="display:block; margin-bottom:6px; color:#6b7280;">
             {{displayDate}} | {{displayStartTime}} – {{displayEndTime}}
           </small>
@@ -310,6 +311,9 @@
   </div>
 
 <script>
+// read admin flag from body attribute (safe even if user is not present)
+const isAdmin = document.body?.dataset?.isAdmin === '1';
+
 document.addEventListener('DOMContentLoaded', () => {
   (async function(){
     // ===== DOM refs =====
@@ -441,11 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const attendees = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
           const type = ev.type || ev.eventType || ev.category || '';
           const id = ev._id || ev.id || ev.eventId || null;
+          // NEW: support multiple possible minutes link fields
+          const minutesLink = ev.minutesLink || ev.minutes_link || ev.minutesURL || ev.minutes || '';
 
           const startDate = startStr ? new Date(startStr) : null;
           const endDate = endStr ? new Date(endStr) : null;
 
-          return { ...ev, id, title, description, location, attendees, type, startDate, endDate };
+          return { ...ev, id, title, description, location, attendees, type, startDate, endDate, minutesLink };
         });
       } catch (err) {
         console.error('Error fetching events', err);
@@ -537,7 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
             attendees: Number(e.attendees ?? e.expectedAttendees ?? 0) || 0,
             type: e.type || e.eventType || '',
             startDateISO: e.startDate ? e.startDate.toISOString() : null,
-            endDateISO: e.endDate ? e.endDate.toISOString() : null
+            endDateISO: e.endDate ? e.endDate.toISOString() : null,
+            minutesLink: e.minutesLink || ''
           }));
           cell.dataset.events = JSON.stringify(normalized);
         } else {
@@ -602,6 +609,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const timeFrom = start ? start.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
           const timeTo = end ? end.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
 
+          // minutes link display (visible to all users if present) and admin edit button (client-side controlled)
+          const minutesHtml = e.minutesLink ? `\n                <div style="margin-top:12px">\n                  <label class="preview-label">Minutes of the Meeting</label>\n                  <div><a href="${escapeHtml(e.minutesLink)}" target="_blank" rel="noopener noreferrer">Minutes of the Meeting</a></div>\n                </div>` : '';
+
+          const adminEditButtonHtml = isAdmin ? `\n                <div style="margin-top:12px; text-align:right">\n                  <button class="btn btn-sm btn-outline-primary edit-minutes-inline" data-eventid="${escapeHtml(e.id || '')}">Edit Minutes</button>\n                </div>` : '';
+
           card.innerHTML = `
             <div style="display:flex; gap:12px; align-items:center;">
               <div style="flex:1">
@@ -648,9 +660,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="preview-input">${escapeHtml(e.type || '')}</div>
               </div>
             </div>
+
+            ${minutesHtml}
+
+            ${adminEditButtonHtml}
           `;
+
           previewList.appendChild(card);
         });
+
+        // attach inline edit handlers for admin buttons
+        if (isAdmin) {
+          previewList.querySelectorAll('.edit-minutes-inline').forEach(btn => {
+            btn.onclick = (ev) => {
+              const eventId = btn.dataset.eventid;
+              const targetEvent = evs.find(x => String(x.id) === String(eventId));
+              openEditMinutesModal(eventId, targetEvent?.minutesLink || '');
+            };
+          });
+        }
       }
 
       previewModal.classList.remove('hidden');
@@ -736,6 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
         data.events.forEach(ev => {
           const startISO = ev.startDateTime ? new Date(ev.startDateTime).toISOString() : '';
           const endISO = ev.endDateTime ? new Date(ev.endDateTime).toISOString() : '';
+          const minutesAttr = ev.minutesLink || ev.minutes_link || ev.minutesURL || '';
 
           list.innerHTML += `
             <div class="event-card prev-event-item"
@@ -748,7 +777,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  data-start="${startISO}"
                  data-end="${endISO}"
                  data-attendees="${ev.expectedAttendees ?? 0}"
-                 data-type="${escapeHtml(ev.type || '')}">
+                 data-type="${escapeHtml(ev.type || '')}"
+                 data-minutes="${escapeHtml(minutesAttr)}">
               <small style="display:block; margin-bottom:6px; color:#6b7280;">
                 ${escapeHtml(ev.displayDate || '')} | ${escapeHtml(ev.displayStartTime || '')} – ${escapeHtml(ev.displayEndTime || '')}
               </small>
@@ -792,7 +822,8 @@ document.addEventListener('DOMContentLoaded', () => {
         attendees: Number(el.dataset.attendees || 0),
         type: el.dataset.type,
         startDateISO: el.dataset.start,
-        endDateISO: el.dataset.end
+        endDateISO: el.dataset.end,
+        minutesLink: el.dataset.minutes || ''
       };
 
       // set preview header date from start ISO (if present)
@@ -873,7 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('POST /api/events/previous payload:', payload);
 
         try {
-          const res = await fetch('/api/events/previous', {
+          const res = await fetch('/api/reports/previous', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -901,6 +932,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
+    // ------- Minutes edit modal & helpers (admin only client-side) -------
+    // create edit minutes modal DOM (injected so we don't change original markup order)
+    (function createEditMinutesModalDom(){
+      const tpl = `
+        <div id="editMinutesModal" class="hidden modal-overlay">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h3 class="modal-title">Edit Minutes Link</h3>
+              <button id="closeEditMinutesBtn" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+              <form id="editMinutesForm">
+                <input type="hidden" id="editEventId" name="eventId" />
+                <div>
+                  <label class="preview-label">Minutes of the Meeting (URL)</label>
+                  <input id="minutesInput" name="minutesLink" type="url" class="preview-input" placeholder="https://example.com/minutes.pdf" />
+                  <div class="form-text" style="margin-top:6px; color:#6b7280;">Leave empty to remove the link.</div>
+                </div>
+                <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end">
+                  <button type="button" id="cancelEditMinutes" class="btn btn-secondary btn-sm">Cancel</button>
+                  <button type="submit" class="btn btn-success btn-sm">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', tpl);
+
+      const editModal = document.getElementById('editMinutesModal');
+      const closeBtn = document.getElementById('closeEditMinutesBtn');
+      const cancelBtn = document.getElementById('cancelEditMinutes');
+      const form = document.getElementById('editMinutesForm');
+      const input = document.getElementById('minutesInput');
+      const hiddenId = document.getElementById('editEventId');
+
+      if (closeBtn) closeBtn.onclick = () => editModal.classList.add('hidden');
+      if (cancelBtn) cancelBtn.onclick = () => editModal.classList.add('hidden');
+
+      window.openEditMinutesModal = (eventId, currentLink='') => {
+        hiddenId.value = eventId || '';
+        input.value = currentLink || '';
+        editModal.classList.remove('hidden');
+      };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const eventId = hiddenId.value;
+        const minutesLink = input.value.trim();
+        try {
+          const res = await fetch(`/events/${encodeURIComponent(eventId)}/minutes`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ minutesLink })
+          });
+          const data = await res.json();
+          if (!res.ok) return alert('Error: ' + (data.error || 'Could not save'));
+
+          // update UI where possible (refresh calendar to get fresh data)
+          editModal.classList.add('hidden');
+          await loadForCurrentView();
+        } catch (err) {
+          console.error(err);
+          alert('Network error while saving minutes link');
+        }
+      });
+    })();
 
   })(); // end inner async IIFE
 });     // end DOMContentLoaded
@@ -934,6 +1033,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="modal-footer">
       <button id="modalCloseFooter" class="btn btn-secondary">Close</button>
+      {{#if user}}
+        {{#if user.isAdmin}}
+          <!-- kept footer edit button for convenience (also have inline per-event Edit) -->
+        {{/if}}
+      {{/if}}
     </div>
   </div>
 </div>
