@@ -1,0 +1,1099 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SKK Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #fff;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+    }
+
+    .page-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 2rem;
+      margin: 30px 0;
+    }
+
+    .reports-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+      max-width: 1100px;
+      margin: auto;
+      padding: 0 20px;
+    }
+
+    /* Calendar */
+    .calendar-box {
+      background-color: #f6f6f6;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .calendar-header h4 {
+      margin: 0;
+      font-weight: 600;
+    }
+    .calendar-controls button {
+      background-color: #133b1c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 12px;
+      margin: 0 3px;
+      font-size: 0.9rem;
+    }
+    .calendar-controls .active {
+      background-color: #5dbb63;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+
+    .day-header {
+      font-weight: 600;
+      padding: 10px 0;
+      background-color: #5dbb63;
+      color: white;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .calendar-day {
+      background-color: #dcdcdc;
+      padding: 15px;
+      border-radius: 6px;
+      min-height: 80px;
+      font-size: 0.9rem;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar-box.day-view .calendar-day {
+      min-height: 150px; 
+      font-size: 1.1rem;
+    }
+
+    /* styling for days that have events */
+    .calendar-day.event {
+      background-color: #b4e4b4;
+      border: 1px solid #3a813a;
+      color: #133b1c;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .previous-events {
+      background-color: #f0f0f0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .event-card {
+      background-color: white;
+      border-left: 4px solid #5dbb63;
+      border-radius: 6px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+    }
+
+    .view-btn {
+      display: block;
+      background-color: #5dbb63;
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 30px;
+      margin: 24px auto 0;
+    }
+
+    .chart-container {
+      max-width: 800px;
+      background-color: #fafafa;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin: 20px auto 60px;
+      height: 320px; /* gives Chart.js room to render */
+    }
+
+    /* small responsive tweak so canvas fills container */
+    #eventChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+      /* modal event card */
+    #dayPreviewModal .event-card {
+      background: #fff;
+      border-left: 4px solid #5dbb63;
+      padding: 10px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    #dayPreviewModal .event-card small { color: #6b7280; }
+    #dayPreviewModal .hidden { display: none; }
+
+    /* modal overlay & card */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-card {
+  background: #f3f3f3;
+  width: 920px;
+  max-width: calc(100% - 40px);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px;
+  background:#efefef;
+  border-bottom:1px solid #e0e0e0;
+}
+
+.modal-title { margin:0; font-size:1.25rem; font-weight:700; }
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-weight:600;
+  cursor:pointer;
+  padding:6px 10px;
+}
+
+/* body containing stacked event cards */
+.modal-body {
+  max-height: 60vh;
+  overflow:auto;
+  padding: 18px;
+  background: #fafafa;
+}
+
+/* single event card styled like your Edit Event form */
+.preview-event-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+}
+
+.preview-row { display:flex; gap:12px; align-items:center; margin-top:8px; }
+.preview-row .col { flex:1; }
+
+.preview-label { font-size:0.85rem; color:#374151; margin-bottom:6px; display:block; }
+.preview-input {
+  width:100%;
+  padding:8px 10px;
+  border-radius:4px;
+  border:1px solid #d1d5db;
+  background:#f8f8f8;
+  color:#111827;
+}
+
+/* controls footer */
+.modal-footer {
+  padding:14px 20px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  background:#fff;
+  border-top:1px solid #eee;
+}
+
+  </style>
+</head>
+
+<body data-is-admin="{{#if user}}{{#if user.isAdmin}}1{{else}}0{{/if}}{{else}}0{{/if}}">
+  <h2 class="page-title">SKK Reports</h2>
+
+  <div class="reports-container">
+    <!-- Calendar -->
+    <div class="calendar-box" id="calendarBox">
+      <div class="calendar-header">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <button id="prevMonthBtn" title="Previous month" class="px-3 py-1 rounded border">‹</button>
+          <h4 id="calendarTitle" style="margin:0 8px;">October 2025</h4>
+          <button id="nextMonthBtn" title="Next month" class="px-3 py-1 rounded border">›</button>
+        </div>
+
+        <div class="calendar-controls">
+          <button id="dayBtn">Day</button>
+          <button id="weekBtn">Week</button>
+          <button id="monthBtn" class="active">Month</button>
+        </div>
+      </div>
+
+      <div class="calendar-grid" id="calendarGrid" aria-live="polite">
+        <!-- Headers (script will ensure proper headers are present) -->
+        <div class="day-header">SUN</div>
+        <div class="day-header">MON</div>
+        <div class="day-header">TUE</div>
+        <div class="day-header">WED</div>
+        <div class="day-header">THU</div>
+        <div class="day-header">FRI</div>
+        <div class="day-header">SAT</div>
+      </div>
+
+      <!-- View Statistics button moved under calendar -->
+      <button class="view-btn" id="viewStatsBtn">View Statistics</button>
+
+      <!-- Chart is below the calendar (hidden initially) -->
+      <div class="chart-container" id="chartContainer" style="display:none;">
+        <canvas id="eventChart"></canvas>
+        <p id="totalAttendeesText" class="text-center mt-3 mb-0 fw-semibold">
+          Total attendees: 0
+        </p>
+      </div>
+    </div>
+
+    <!-- Right column: Previous events -->
+    <div class="previous-events" aria-live="polite">
+      <h5>Previous events</h5>
+
+      <!-- keep the list in a dedicated container so we don't overwrite the heading -->
+      <div id="previousEventsList">
+        {{#each previousEvents}}
+        <div class="event-card prev-event-item"
+             role="button"
+             tabindex="0"
+             data-id="{{_id}}"
+             data-title="{{title}}"
+             data-desc="{{eventDescription}}"
+             data-location="{{location}}"
+             data-start="{{startDateTime}}"
+             data-end="{{endDateTime}}"
+             data-attendees="{{expectedAttendees}}"
+             data-type="{{type}}"
+             data-minutes="{{minutesLink}}">
+          <small style="display:block; margin-bottom:6px; color:#6b7280;">
+            {{displayDate}} | {{displayStartTime}} – {{displayEndTime}}
+          </small>
+          <div style="font-weight:700">{{title}}</div>
+          <small style="display:block; margin-top:6px; color:#374151;">LOCATION: {{location}}</small>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+
+<script>
+// read admin flag from body attribute (safe even if user is not present)
+const isAdmin = document.body?.dataset?.isAdmin === '1';
+
+document.addEventListener('DOMContentLoaded', () => {
+  (async function(){
+    // ===== DOM refs =====
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarTitle = document.getElementById('calendarTitle');
+    const prevBtn = document.getElementById('prevMonthBtn');
+    const nextBtn = document.getElementById('nextMonthBtn');
+    const dayBtn = document.getElementById('dayBtn');
+    const weekBtn = document.getElementById('weekBtn');
+    const monthBtn = document.getElementById('monthBtn');
+    const calendarBox = document.getElementById('calendarBox');
+
+    const previewModal = document.getElementById('dayPreviewModal') || null;
+    const previewList = document.getElementById('previewList') || null;
+    const previewDate = document.getElementById('previewDate') || null;
+    const closePreviewBtn = document.getElementById('closePreviewBtn') || null;
+
+    const chartCanvas = document.getElementById('eventChart');
+    const chartContainerEl = document.getElementById('chartContainer');
+    const viewBtn = document.getElementById('viewStatsBtn');
+
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    let currentDate = new Date(); // active date context
+    let currentView = 'month'; // 'month' | 'week' | 'day'
+    let eventsCache = [];
+
+    // simple DOM-safe text escaper (single shared definition)
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // ===== Chart.js: create and updater =====
+    let eventChart = null;
+    function createEmptyChart() {
+      if (!chartCanvas) return null;
+      const ctx = chartCanvas.getContext('2d');
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'No. of Attendees',
+            data: []
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          scales: { x: { beginAtZero: true } },
+          plugins: { legend: { display: false } },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+    function updateStatsFromEvents(events) {
+      if (!eventChart) return;
+      const map = new Map();
+      for (const ev of events || []) {
+        const key = ev.title || ev.eventName || 'Untitled';
+        const count = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? 1);
+        map.set(key, (map.get(key) || 0) + (isNaN(count) ? 1 : count));
+      }
+      const labels = Array.from(map.keys());
+      const data = labels.map(l => map.get(l));
+      eventChart.data.labels = labels;
+      eventChart.data.datasets[0].data = data;
+      try { eventChart.update(); } catch(e) { /* ignore chart errors */ }
+
+      const totalAttendees = (events || []).reduce((sum, ev) => {
+        const count = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
+        return sum + (isNaN(count) ? 0 : count);
+      }, 0);
+
+      const totalTextEl = document.getElementById('totalAttendeesText');
+      if (totalTextEl) totalTextEl.textContent = `Total attendees: ${totalAttendees}`;
+    }
+    // create chart instance once
+    eventChart = createEmptyChart();
+
+    // show/hide stats (button placed under calendar)
+    if (chartContainerEl) chartContainerEl.style.display = 'none';
+    if (viewBtn) viewBtn.textContent = 'View Statistics';
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => {
+        if (!chartContainerEl) return;
+        const isHidden = chartContainerEl.style.display === 'none' || getComputedStyle(chartContainerEl).display === 'none';
+        if (isHidden) {
+          chartContainerEl.style.display = '';
+          viewBtn.textContent = 'Hide Statistics';
+          setTimeout(() => { try { eventChart && eventChart.resize(); eventChart && eventChart.update(); } catch(e){} }, 50);
+        } else {
+          chartContainerEl.style.display = 'none';
+          viewBtn.textContent = 'View Statistics';
+        }
+        viewBtn.blur();
+      });
+    }
+
+    // ===== helpers & fetch =====
+    function weekdayHeadersHtml() {
+      return `
+        <div class="day-header">SUN</div>
+        <div class="day-header">MON</div>
+        <div class="day-header">TUE</div>
+        <div class="day-header">WED</div>
+        <div class="day-header">THU</div>
+        <div class="day-header">FRI</div>
+        <div class="day-header">SAT</div>
+      `;
+    }
+
+    async function fetchEventsForRange(startISO, endISO) {
+      try {
+        const res = await fetch(`/api/events?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
+        const data = await res.json();
+        if (!data.success) return [];
+        return data.events.map(ev => {
+          const startStr = ev.start || ev.startUTC || ev.startDateTime || ev.date || ev.datetime || ev.startDate;
+          const endStr = ev.end || ev.endUTC || ev.endDateTime || ev.endDate || ev.finish;
+          const title = ev.title || ev.eventName || ev.name || ev.summary || 'Untitled';
+          const description = ev.description || ev.details || ev.eventDescription || '';
+          const location = ev.location || ev.venue || ev.place || ev.locationName || '';
+          const attendees = Number(ev.expectedAttendees ?? ev.attendees ?? ev.attendeeCount ?? ev.noOfAttendees ?? 0);
+          const type = ev.type || ev.eventType || ev.category || '';
+          const id = ev._id || ev.id || ev.eventId || null;
+          // NEW: support multiple possible minutes link fields
+          const minutesLink = ev.minutesLink || ev.minutes_link || ev.minutesURL || ev.minutes || '';
+
+          const startDate = startStr ? new Date(startStr) : null;
+          const endDate = endStr ? new Date(endStr) : null;
+
+          return { ...ev, id, title, description, location, attendees, type, startDate, endDate, minutesLink };
+        });
+      } catch (err) {
+        console.error('Error fetching events', err);
+        return [];
+      }
+    }
+
+    // ===== renderers (month/week/day) =====
+    function renderMonthView(date) {
+      const y = date.getFullYear(), m = date.getMonth();
+      calendarTitle.textContent = `${monthNames[m]} ${y}`;
+      const daysInMonth = new Date(y, m+1, 0).getDate();
+      const firstWeekday = new Date(y, m, 1).getDay();
+
+      let html = weekdayHeadersHtml();
+      for (let i=0;i<firstWeekday;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
+      for (let d=1; d<=daysInMonth; d++) {
+        html += `<div class="calendar-day" data-day="${d}" data-month="${m}" data-year="${y}">${d}</div>`;
+      }
+      const total = firstWeekday + daysInMonth;
+      const trailing = (7 - (total % 7)) % 7;
+      for (let i=0;i<trailing;i++) html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
+
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(y,m);
+      markEventDays();
+      attachDayClickHandlers();
+    }
+
+    function renderWeekView(date) {
+      const copy = new Date(date);
+      const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
+      calendarTitle.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
+
+      let html = weekdayHeadersHtml();
+      for (let i=0;i<7;i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        html += `<div class="calendar-day" data-day="${d.getDate()}" data-month="${d.getMonth()}" data-year="${d.getFullYear()}">${d.getDate()}</div>`;
+      }
+
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(startOfWeek.getFullYear(), startOfWeek.getMonth());
+      markEventDays();
+      attachDayClickHandlers();
+    }
+
+    function renderDayView(date) {
+      calendarTitle.textContent = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+      let html = weekdayHeadersHtml();
+      html += `<div class="calendar-day" style="grid-column: 1 / -1; min-height: 160px;" data-day="${date.getDate()}" data-month="${date.getMonth()}" data-year="${date.getFullYear()}">${date.getDate()}</div>`;
+      calendarGrid.innerHTML = html;
+      highlightTodayIfNeeded(date.getFullYear(), date.getMonth());
+      markEventDays();
+      attachDayClickHandlers();
+    }
+
+    function highlightTodayIfNeeded(y, m) {
+      const today = new Date();
+      calendarGrid.querySelectorAll('.calendar-day').forEach(el=>el.classList.remove('today'));
+      if (today.getFullYear() === y && today.getMonth() === m) {
+        const sel = `.calendar-day[data-day="${today.getDate()}"][data-month="${today.getMonth()}"][data-year="${today.getFullYear()}"]`;
+        const todayCell = calendarGrid.querySelector(sel);
+        if (todayCell) todayCell.classList.add('today');
+      }
+    }
+
+    function markEventDays() {
+      const dayMap = new Map();
+      for (const ev of eventsCache) {
+        if (!ev.startDate) continue;
+        const key = `${ev.startDate.getFullYear()}-${ev.startDate.getMonth()}-${ev.startDate.getDate()}`;
+        if (!dayMap.has(key)) dayMap.set(key, []);
+        dayMap.get(key).push(ev);
+      }
+      calendarGrid.querySelectorAll('.calendar-day').forEach(cell => {
+        if (cell.classList.contains('empty')) return;
+        const y = Number(cell.dataset.year), m = Number(cell.dataset.month), d = Number(cell.dataset.day);
+        const key = `${y}-${m}-${d}`;
+        const evs = dayMap.get(key) || [];
+        if (evs.length) {
+          // use the .event class (matches CSS above)
+          cell.classList.add('event');
+          const normalized = evs.map(e => ({
+            id: e.id,
+            title: e.title || '',
+            description: e.description || '',
+            location: e.location || '',
+            attendees: Number(e.attendees ?? e.expectedAttendees ?? 0) || 0,
+            type: e.type || e.eventType || '',
+            startDateISO: e.startDate ? e.startDate.toISOString() : null,
+            endDateISO: e.endDate ? e.endDate.toISOString() : null,
+            minutesLink: e.minutesLink || ''
+          }));
+          cell.dataset.events = JSON.stringify(normalized);
+        } else {
+          cell.classList.remove('event');
+          cell.dataset.events = '';
+        }
+      });
+    }
+
+    function attachDayClickHandlers() {
+      calendarGrid.querySelectorAll('.calendar-day').forEach(cell=>{
+        if (cell.classList.contains('empty')) return;
+        cell.onclick = () => {
+          const evs = cell.dataset.events ? JSON.parse(cell.dataset.events) : [];
+          showPreview(cell, evs);
+        };
+      });
+    }
+
+    // showPreview improved: uses explicit event start date when provided (prev-event) and falls back to cell dataset
+    function showPreview(cell, evs) {
+      if (!previewModal || !previewList || !previewDate) {
+        if (!evs || evs.length === 0) return alert('No events for this day.');
+        return alert(evs.map(e => `${e.time} ${e.title}\n${e.description || ''}\nLocation: ${e.location || 'TBA'}`).join('\n\n'));
+      }
+
+      // determine header date:
+      let headerDateText = '';
+      // if the single event has startDateISO use that
+      if (Array.isArray(evs) && evs.length === 1 && evs[0].startDateISO) {
+        const start = new Date(evs[0].startDateISO);
+        headerDateText = start.toLocaleDateString();
+      } else {
+        // prefer cell dataset if present
+        const y = cell && cell.dataset && cell.dataset.year;
+        const m = cell && cell.dataset && cell.dataset.month;
+        const d = cell && cell.dataset && cell.dataset.day;
+        if (y && m !== undefined && d) {
+          headerDateText = `${monthNames[Number(m)]} ${d}, ${y}`;
+        } else if (Array.isArray(evs) && evs.length > 0 && evs[0].startDateISO) {
+          headerDateText = new Date(evs[0].startDateISO).toLocaleDateString();
+        } else {
+          headerDateText = '';
+        }
+      }
+
+      previewDate.textContent = headerDateText || 'Date';
+
+      previewList.innerHTML = '';
+
+      if (!evs || evs.length === 0) {
+        previewList.innerHTML = `<p class="text-muted">No events for this day.</p>`;
+      } else {
+        evs.forEach(e => {
+          const card = document.createElement('div');
+          card.className = 'preview-event-card';
+
+          const start = e.startDateISO ? new Date(e.startDateISO) : null;
+          const end = e.endDateISO ? new Date(e.endDateISO) : null;
+
+          const dateStr = start ? start.toLocaleDateString() : (end ? end.toLocaleDateString() : '');
+          const timeFrom = start ? start.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+          const timeTo = end ? end.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+
+          // minutes link display (visible to all users if present) and admin edit button (client-side controlled)
+          const minutesHtml = e.minutesLink ? `\n                <div style="margin-top:12px">\n                  <label class="preview-label">Minutes of the Meeting</label>\n                  <div><a href="${escapeHtml(e.minutesLink)}" target="_blank" rel="noopener noreferrer">Minutes of the Meeting</a></div>\n                </div>` : '';
+
+          const adminEditButtonHtml = isAdmin ? `\n                <div style="margin-top:12px; text-align:right">\n                  <button class="btn btn-sm btn-outline-primary edit-minutes-inline" data-eventid="${escapeHtml(e.id || '')}">Edit Minutes</button>\n                </div>` : '';
+
+          card.innerHTML = `
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div style="flex:1">
+                <label class="preview-label">Title</label>
+                <div class="preview-input">${escapeHtml(e.title || '')}</div>
+              </div>
+            </div>
+
+            <div class="preview-row">
+              <div class="col">
+                <label class="preview-label">Description</label>
+                <div class="preview-input" style="min-height:60px; white-space:pre-wrap;">
+                  ${escapeHtml(e.description || '')}
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-row" style="margin-top:12px">
+              <div class="col">
+                <label class="preview-label">Location</label>
+                <div class="preview-input">${escapeHtml(e.location || '')}</div>
+              </div>
+              <div style="width:160px">
+                <label class="preview-label">No. of Attendees</label>
+                <div class="preview-input">${escapeHtml(String(e.attendees || ''))}</div>
+              </div>
+            </div>
+
+            <div class="preview-row" style="margin-top:12px">
+              <div style="width:220px">
+                <label class="preview-label">Date</label>
+                <div class="preview-input">${escapeHtml(dateStr)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Time From</label>
+                <div class="preview-input">${escapeHtml(timeFrom)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Time To</label>
+                <div class="preview-input">${escapeHtml(timeTo)}</div>
+              </div>
+              <div style="width:140px">
+                <label class="preview-label">Type</label>
+                <div class="preview-input">${escapeHtml(e.type || '')}</div>
+              </div>
+            </div>
+
+            ${minutesHtml}
+
+            ${adminEditButtonHtml}
+          `;
+
+          previewList.appendChild(card);
+        });
+
+        // attach inline edit handlers for admin buttons
+        if (isAdmin) {
+          previewList.querySelectorAll('.edit-minutes-inline').forEach(btn => {
+            btn.onclick = (ev) => {
+              const eventId = btn.dataset.eventid;
+              const targetEvent = evs.find(x => String(x.id) === String(eventId));
+              openEditMinutesModal(eventId, targetEvent?.minutesLink || '');
+            };
+          });
+        }
+      }
+
+      previewModal.classList.remove('hidden');
+    }
+
+    // close preview modal
+    closePreviewBtn && (closePreviewBtn.onclick = () => previewModal.classList.add('hidden'));
+    document.getElementById('modalCloseFooter') && (document.getElementById('modalCloseFooter').onclick = () => previewModal.classList.add('hidden'));
+    previewModal && previewModal.addEventListener('click', (ev) => { if (ev.target === previewModal) previewModal.classList.add('hidden'); });
+
+    // Navigation behavior changes depending on currentView
+    prevBtn && (prevBtn.onclick = async () => {
+      if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() - 1);
+      else if (currentView === 'week') currentDate.setDate(currentDate.getDate() - 7);
+      else currentDate.setDate(currentDate.getDate() - 1);
+      await loadForCurrentView();
+    });
+    nextBtn && (nextBtn.onclick = async () => {
+      if (currentView === 'month') currentDate.setMonth(currentDate.getMonth() + 1);
+      else if (currentView === 'week') currentDate.setDate(currentDate.getDate() + 7);
+      else currentDate.setDate(currentDate.getDate() + 1);
+      await loadForCurrentView();
+    });
+
+    function setActiveView(view) {
+      currentView = view;
+      document.querySelectorAll('.calendar-controls button').forEach(b => b.classList.remove('active'));
+      if (view === 'month') monthBtn.classList.add('active');
+      if (view === 'week') weekBtn.classList.add('active');
+      if (view === 'day') dayBtn.classList.add('active');
+    }
+
+    // wire view toggle buttons
+    dayBtn && (dayBtn.onclick = async () => { setActiveView('day'); await loadForCurrentView(); calendarBox.classList.add('day-view'); });
+    weekBtn && (weekBtn.onclick = async () => { setActiveView('week'); await loadForCurrentView(); calendarBox.classList.remove('day-view'); });
+    monthBtn && (monthBtn.onclick = async () => { setActiveView('month'); await loadForCurrentView(); calendarBox.classList.remove('day-view'); });
+
+    // load events for the relevant range depending on view
+    async function loadForCurrentView() {
+      if (currentView === 'month') {
+        const y = currentDate.getFullYear(), m = currentDate.getMonth();
+        const start = `${y}-${String(m+1).padStart(2,'0')}-01`;
+        const last = new Date(y, m+1, 0).getDate();
+        const end = `${y}-${String(m+1).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
+        eventsCache = await fetchEventsForRange(start, end);
+        updateStatsFromEvents(eventsCache);
+        renderMonthView(currentDate);
+      } else if (currentView === 'week') {
+        const copy = new Date(currentDate);
+        const startOfWeek = new Date(copy.setDate(copy.getDate() - copy.getDay()));
+        const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6);
+        eventsCache = await fetchEventsForRange(startOfWeek.toISOString().slice(0,10), endOfWeek.toISOString().slice(0,10));
+        updateStatsFromEvents(eventsCache);
+        renderWeekView(currentDate);
+      } else { // day
+        const d = currentDate;
+        const iso = d.toISOString().slice(0,10);
+        eventsCache = await fetchEventsForRange(iso, iso);
+        updateStatsFromEvents(eventsCache);
+        renderDayView(currentDate);
+      }
+      await loadPreviousEventsPanel(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    // ----- load previous events for selected month and populate panel -----
+    async function loadPreviousEventsPanel(year, month) {
+      try {
+        const res = await fetch(`/api/reports/previous?year=${year}&month=${month}`);
+        const data = await res.json();
+        const list = document.getElementById("previousEventsList");
+        if (!list) return console.warn('#previousEventsList not found');
+
+        // clear only the list container (don't remove heading or controls)
+        list.innerHTML = "";
+
+        if (!data.success || !Array.isArray(data.events) || data.events.length === 0) {
+          list.innerHTML = `<p style="opacity:0.6; margin-top:12px;">No previous events this month.</p>`;
+          attachPrevEventListeners(); // ensure old listeners cleared
+          return;
+        }
+
+        // Add each event card into the list container
+        data.events.forEach(ev => {
+          const startISO = ev.startDateTime ? new Date(ev.startDateTime).toISOString() : '';
+          const endISO = ev.endDateTime ? new Date(ev.endDateTime).toISOString() : '';
+          const minutesAttr = ev.minutesLink || ev.minutes_link || ev.minutesURL || '';
+
+          list.innerHTML += `
+            <div class="event-card prev-event-item"
+                 role="button"
+                 tabindex="0"
+                 data-id="${ev._id || ''}"
+                 data-title="${escapeHtml(ev.title || '')}"
+                 data-desc="${escapeHtml(ev.eventDescription || '')}"
+                 data-location="${escapeHtml(ev.location || '')}"
+                 data-start="${startISO}"
+                 data-end="${endISO}"
+                 data-attendees="${ev.expectedAttendees ?? 0}"
+                 data-type="${escapeHtml(ev.type || '')}"
+                 data-minutes="${escapeHtml(minutesAttr)}">
+              <small style="display:block; margin-bottom:6px; color:#6b7280;">
+                ${escapeHtml(ev.displayDate || '')} | ${escapeHtml(ev.displayStartTime || '')} – ${escapeHtml(ev.displayEndTime || '')}
+              </small>
+              <div style="font-weight:700">${escapeHtml(ev.title || 'Untitled')}</div>
+              <small style="display:block; margin-top:6px; color:#374151;">LOCATION: ${escapeHtml(ev.location || '')}</small>
+            </div>
+          `;
+        });
+
+        // attach listeners after DOM insertion
+        attachPrevEventListeners();
+
+      } catch (err) {
+        console.error('loadPreviousEventsPanel error:', err);
+      }
+    }
+
+    // ----- make prev-event-item clickable -----
+    function attachPrevEventListeners() {
+      const items = document.querySelectorAll('.prev-event-item');
+      if (!items) return;
+      items.forEach(el => {
+        // remove old handlers to avoid double-bind
+        el.onclick = null;
+        el.onkeypress = null;
+
+        el.addEventListener('click', () => openPrevEventFromEl(el));
+        el.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') openPrevEventFromEl(el);
+        });
+      });
+    }
+
+    // ----- preview modal for previous events -----
+    function openPrevEventFromEl(el) {
+      const ev = {
+        id: el.dataset.id,
+        title: el.dataset.title,
+        description: el.dataset.desc,
+        location: el.dataset.location,
+        attendees: Number(el.dataset.attendees || 0),
+        type: el.dataset.type,
+        startDateISO: el.dataset.start,
+        endDateISO: el.dataset.end,
+        minutesLink: el.dataset.minutes || ''
+      };
+
+      // set preview header date from start ISO (if present)
+      if (ev.startDateISO && previewDate) previewDate.textContent = new Date(ev.startDateISO).toLocaleDateString();
+
+      // show preview using the same showPreview (it expects an array of events)
+      showPreview({ dataset: { year: '', month: '', day: '' } }, [ev]);
+    }
+
+    // initial
+    setActiveView('month');
+    await loadForCurrentView();
+
+    // expose refresh
+    window.refreshReportsCalendar = async () => { await loadForCurrentView(); };
+
+    // --- Add Previous Event wiring (INSIDE the DOMContentLoaded IIFE) ---
+    const addPrevBtn = document.getElementById('addPrevBtn');
+    const addPrevModal = document.getElementById('addPrevModal');
+    const closeAddPrevBtn = document.getElementById('closeAddPrevBtn');
+    const cancelAddPrev = document.getElementById('cancelAddPrev');
+    const addPrevForm = document.getElementById('addPrevForm');
+
+    if (addPrevBtn) {
+      addPrevBtn.addEventListener('click', () => {
+        if (!addPrevModal || !addPrevForm) return;
+        const dateInput = addPrevForm.querySelector('input[name="date"]');
+        if (dateInput) dateInput.max = new Date().toISOString().slice(0,10);
+        addPrevModal.classList.remove('hidden');
+      });
+    }
+    if (closeAddPrevBtn) closeAddPrevBtn.onclick = () => addPrevModal.classList.add('hidden');
+    if (cancelAddPrev) cancelAddPrev.onclick = () => addPrevModal.classList.add('hidden');
+
+    function normalizeTimeInput(t) {
+      if (!t) return '';
+      const ampmMatch = t.match(/\s*(\d{1,2}):(\d{2})\s*([AaPp][Mm])\s*/);
+      if (ampmMatch) {
+        let hh = Number(ampmMatch[1]);
+        const mm = ampmMatch[2];
+        const isPM = ampmMatch[3].toLowerCase() === 'pm';
+        if (hh === 12 && !isPM) hh = 0;
+        if (isPM && hh !== 12) hh += 12;
+        return String(hh).padStart(2,'0') + ':' + mm;
+      }
+      if (/^\d{1,2}:\d{2}$/.test(t)) {
+        const [h,m] = t.split(':').map(Number);
+        return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+      }
+      return '';
+    }
+
+    if (addPrevForm) {
+      addPrevForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(addPrevForm);
+
+        const date = fd.get('date'); // 'YYYY-MM-DD'
+        const rawFrom = fd.get('timeFrom') || '';
+        const rawTo   = fd.get('timeTo') || '';
+
+        const timeFrom = normalizeTimeInput(rawFrom);
+        const timeTo   = normalizeTimeInput(rawTo);
+
+        const startISO = date ? `${date}T${timeFrom || '00:00'}` : null;
+        const endISO   = date ? `${date}T${timeTo   || '23:59'}` : null;
+
+        const payload = {
+          title: fd.get('title'),
+          eventDescription: fd.get('description'),
+          location: fd.get('location'),
+          startDateTime: startISO,
+          endDateTime: endISO,
+          expectedAttendees: Number(fd.get('attendees') || 0),
+          type: fd.get('type') || ''
+        };
+
+        console.log('POST /api/events/previous payload:', payload);
+
+        try {
+          const res = await fetch('/api/reports/previous', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          let data;
+          try { data = await res.json(); } catch (parseErr) {
+            const text = await res.text();
+            console.error('Non-JSON response:', res.status, text);
+            return alert('Server returned non-JSON response: ' + res.status + ' — check server logs');
+          }
+
+          console.log('Response status:', res.status, 'body:', data);
+
+          if (!res.ok) {
+            const msg = data.message || data.error || JSON.stringify(data);
+            return alert('Server error: ' + msg);
+          }
+
+          addPrevModal.classList.add('hidden');
+          location.reload();
+        } catch (err) {
+          console.error('Network or fetch error:', err);
+          alert('Network error: ' + err.message);
+        }
+      });
+    }
+
+    // ------- Minutes edit modal & helpers (admin only client-side) -------
+    // create edit minutes modal DOM (injected so we don't change original markup order)
+    (function createEditMinutesModalDom(){
+      const tpl = `
+        <div id="editMinutesModal" class="hidden modal-overlay">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h3 class="modal-title">Edit Minutes Link</h3>
+              <button id="closeEditMinutesBtn" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+              <form id="editMinutesForm">
+                <input type="hidden" id="editEventId" name="eventId" />
+                <div>
+                  <label class="preview-label">Minutes of the Meeting (URL)</label>
+                  <input id="minutesInput" name="minutesLink" type="url" class="preview-input" placeholder="https://example.com/minutes.pdf" />
+                  <div class="form-text" style="margin-top:6px; color:#6b7280;">Leave empty to remove the link.</div>
+                </div>
+                <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end">
+                  <button type="button" id="cancelEditMinutes" class="btn btn-secondary btn-sm">Cancel</button>
+                  <button type="submit" class="btn btn-success btn-sm">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', tpl);
+
+      const editModal = document.getElementById('editMinutesModal');
+      const closeBtn = document.getElementById('closeEditMinutesBtn');
+      const cancelBtn = document.getElementById('cancelEditMinutes');
+      const form = document.getElementById('editMinutesForm');
+      const input = document.getElementById('minutesInput');
+      const hiddenId = document.getElementById('editEventId');
+
+      if (closeBtn) closeBtn.onclick = () => editModal.classList.add('hidden');
+      if (cancelBtn) cancelBtn.onclick = () => editModal.classList.add('hidden');
+
+      window.openEditMinutesModal = (eventId, currentLink='') => {
+        hiddenId.value = eventId || '';
+        input.value = currentLink || '';
+        editModal.classList.remove('hidden');
+      };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const eventId = hiddenId.value;
+        const minutesLink = input.value.trim();
+        try {
+          const res = await fetch(`/events/${encodeURIComponent(eventId)}/minutes`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ minutesLink })
+          });
+          const data = await res.json();
+          if (!res.ok) return alert('Error: ' + (data.error || 'Could not save'));
+
+          // update UI where possible (refresh calendar to get fresh data)
+          editModal.classList.add('hidden');
+          await loadForCurrentView();
+        } catch (err) {
+          console.error(err);
+          alert('Network error while saving minutes link');
+        }
+      });
+    })();
+
+  })(); // end inner async IIFE
+});     // end DOMContentLoaded
+</script>
+
+<style>
+  /* day with events - keep in sync with class used by JS (.event) */
+  .calendar-day.event {
+    background: #b4e4b4;
+    border: 1px solid #3a813a;
+    color: #133b1c;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .calendar-day.empty { background: transparent; box-shadow: none; }
+  .calendar-day.today { box-shadow: 0 0 0 2px rgba(93,187,99,0.25) inset; }
+  .hidden { display: none; }
+</style>
+
+<!-- Event Preview Modal (Edit-style read-only cards) -->
+<div id="dayPreviewModal" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="previewDate" class="modal-title">Date</h3>
+      <button id="closePreviewBtn" class="btn-close">×</button>
+    </div>
+
+    <div id="previewList" class="modal-body">
+      <!-- event detail cards will be injected here -->
+    </div>
+
+    <div class="modal-footer">
+      <button id="modalCloseFooter" class="btn btn-secondary">Close</button>
+      {{#if user}}
+        {{#if user.isAdmin}}
+          <!-- kept footer edit button for convenience (also have inline per-event Edit) -->
+        {{/if}}
+      {{/if}}
+    </div>
+  </div>
+</div>
+
+<!-- Add Previous Event Modal (admin only) -->
+<div id="addPrevModal" class="hidden modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Previous Event</h3>
+      <button id="closeAddPrevBtn" class="btn-close" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form id="addPrevForm">
+        <div class="mb-2">
+          <label class="preview-label">Title</label>
+          <input name="title" class="preview-input" required />
+        </div>
+
+        <div class="mb-2">
+          <label class="preview-label">Description</label>
+          <textarea name="description" class="preview-input" style="min-height:90px"></textarea>
+        </div>
+
+        <div class="mb-2">
+          <label class="preview-label">Location</label>
+          <input name="location" class="preview-input" />
+        </div>
+
+        <div class="preview-row" style="gap:8px; margin-top:8px">
+          <div style="flex:1">
+            <label class="preview-label">Date</label>
+            <input type="date" name="date" class="preview-input" required />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">Time From</label>
+            <input type="time" name="timeFrom" class="preview-input" />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">Time To</label>
+            <input type="time" name="timeTo" class="preview-input" />
+          </div>
+          <div style="width:140px">
+            <label class="preview-label">No. Attendees</label>
+            <input type="number" name="attendees" class="preview-input" min="0" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end">
+          <button type="button" id="cancelAddPrev" class="btn btn-secondary btn-sm">Cancel</button>
+          <button type="submit" class="btn btn-success btn-sm">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

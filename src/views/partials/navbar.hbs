@@ -1,0 +1,44 @@
+<nav class='navbar navbar-expand-lg' role='navigation'>
+  <div class='container-fluid'>
+    <a class='navbar-brand d-flex align-items-center gap-2' href='/'>
+      <img src='/assets/SKK_Logo.png' alt='Logo' class='site-logo d-inline-block align-text-top' />
+      <span class='fw-bold site-brand'>SKK</span>
+    </a>
+
+    <button
+      class='navbar-toggler'
+      type='button'
+      data-bs-toggle='collapse'
+      data-bs-target='#mainNavbar'
+      aria-controls='mainNavbar'
+      aria-expanded='false'
+      aria-label='Toggle navigation'
+    >
+      <span class='navbar-toggler-icon'></span>
+    </button>
+
+    <div class='collapse navbar-collapse' id='mainNavbar'>
+      <ul class='navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center'>
+        <li class='nav-item'><a class='nav-link' href='/'>Home</a></li>
+        <li class='nav-item'><a class='nav-link' href='/calendar'>Calendar</a></li>
+        <li class='nav-item'><a class='nav-link' href='/reports'>Reports</a></li>
+
+        {{#if (eq user.role 'admin')}}
+          <li class='nav-item'><a class='nav-link' href='/member-database'>Database</a></li>
+        {{/if}}
+
+        {{#if user}}
+          <li class='nav-item d-lg-flex align-items-center'><span class='nav-text'>Hi,
+              {{user.username}}</span></li>
+          <li class='nav-item'>
+            <form method='post' action='/logout' class='d-inline'>
+              <button class='btn btn-link nav-link text-danger p-0'>Logout</button>
+            </form>
+          </li>
+        {{else}}
+          <li class='nav-item'><a class='nav-link' href='/login'>Login</a></li>
+        {{/if}}
+      </ul>
+    </div>
+  </div>
+</nav>

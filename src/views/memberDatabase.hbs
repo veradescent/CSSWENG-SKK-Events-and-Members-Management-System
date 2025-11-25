@@ -1,0 +1,125 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKK Member Database</title>
+</head>
+
+<link rel="stylesheet" href="/css/memberDatabase.css">
+<script defer src="/js/memberDatabase.js"></script>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="fw-bold display-3">SKK Member Database</h1>
+    </div>
+
+        <div class="mt-5">
+        <div class="mt-3 mb-3">
+            <form class="d-flex align-items-center" role="search" action="/member-database" method="GET">
+            
+            <!-- 🔍 Search box -->
+            <input 
+                class="form-control me-2 db-search-input" 
+                type="search" 
+                name="search"
+                placeholder="Search by name, email, or contact"
+                aria-label="Search"
+                value="{{filters.search}}"
+            >
+
+            <!-- ✅ Search button -->
+            <button 
+                class="btn btn-outline-success rounded-circle me-2 icon-btn" 
+                type="submit"
+            >
+                <i class="bi bi-search"></i>
+            </button>
+
+            <!-- ⚙️ Sort dropdown -->
+            <div class="dropdown me-2">
+                <button 
+                class="btn btn-outline-primary rounded-circle dropdown-toggle icon-btn"
+                type="button"
+                id="sortDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                >
+                <i class="bi bi-sort-alpha-down"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                <li><button class="dropdown-item" type="submit" name="sort" value="name_asc">Name (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="name_desc">Name (Z–A)</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="area_asc">Area (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="area_desc">Area (Z–A)</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="sim_asc">SIM (A–Z)</button></li>
+                <li><button class="dropdown-item" type="submit" name="sort" value="sim_desc">SIM (Z–A)</button></li>
+                </ul>
+            </div>
+
+            <!-- 🔽 Filter button (for future dropdown filters) -->
+            <button 
+                class="btn btn-outline-secondary rounded-circle icon-btn" 
+                type="button"
+                onclick="toggleFilters()"
+            >
+                <i class="bi bi-filter"></i>
+            </button>
+            </form>
+        </div>
+        </div>
+
+
+         <table class="table table-bordered member-table">
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Name</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Area</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">SIM</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Contact Number</th>
+                    <th scope="col" style="border: 5px solid #bfbfc4; background-color: #adb5bd;">Email Address</th>
+                </tr>
+            </thead>
+            <tbody style="background-color: #e9ecef;">
+                {{#each members}}
+                    <tr data-id="{{this._id}}">
+                        <td>{{fullName}}</td>
+                        <td>{{areaChurch}}</td>
+                        <td>{{sim}}</td>
+                        <td>{{contactNumber}}</td>
+                        <td>{{emailAddress}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div class="mt-3">
+            <button class="btn btn-success me-2" id="addBtn">Add</button>
+            <button class="btn btn-warning me-2" id="editBtn">Edit</button>
+            <button class="btn btn-danger" id="removeBtn">Remove</button>
+        </div>
+    </div>
+</div>
+
+<div class="custom-popup" id="popupForm" style="display: none;">
+    <div class="popup-content">
+        <h4 id="popupTitle">Add Member</h4>
+        <form id="memberForm">
+            <input type="text" id="name" class="form-control mb-2" placeholder="Name" required>
+            <input type="text" id="area" class="form-control mb-2" placeholder="Area" required>
+            <select id="sim" class="form-select mb-2" required>
+                <option value="" disabled selected>Select SIM</option>
+                <option value="Kids">Kids</option>
+                <option value="Youth">Youth</option>
+                <option value="YoAds">YoAds</option>
+                <option value="WOW">WOW</option>
+                <option value="DIG">DIG</option>
+            </select>
+            <input type="text" id="contact" class="form-control mb-2" placeholder="Contact Number">
+            <input type="email" id="email" class="form-control mb-2" placeholder="Email Address" required>
+            <div class="text-end mt-3">
+                <button type="submit" class="btn btn-success" id="submitBtn">Save</button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
