@@ -88,7 +88,7 @@ function buildEmailContent(event) {
         </div>
 
         <div style="text-align:center; margin-top:18px;">
-          <a href="${process.env.SITE_ORIGIN || 'http://localhost:3000'}/events/${event._id}" style="display:inline-block; padding:12px 18px; border-radius:8px; background:linear-gradient(90deg,#1f8a31,#5dbb63); color:#fff; text-decoration:none; font-weight:600;">
+          <a href="https://skk.up.railway.app" style="display:inline-block; padding:12px 18px; border-radius:8px; background:linear-gradient(90deg,#1f8a31,#5dbb63); color:#fff; text-decoration:none; font-weight:600;">
             ✅ View Event Details
           </a>
         </div>
