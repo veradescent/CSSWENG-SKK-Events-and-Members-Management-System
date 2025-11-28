@@ -87,6 +87,70 @@ a {
   right: 0;
 }
 
+.events-carousel-container .carousel-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.events-carousel-container .carousel-controls .carousel-arrow {
+  position: static;
+  top: auto;
+  transform: none;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+}
+.events-carousel-container .carousel-controls .carousel-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 'No upcoming events' placeholder styled to look like a gray input */
+.no-upcoming {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: #ffffff;
+  color: #6b6b6b;
+}
+
+/* Slideshow styles */
+.homepage-slideshow {
+  position: relative;
+  width: 100%;
+  background-color: #81C14B; /* requested green background */
+  overflow: hidden;
+  border-radius: 6px;
+}
+.homepage-slideshow .slides {
+  position: relative;
+  width: 100%;
+  /* adjust height as needed; keeps a consistent visual area */
+  height: 320px;
+}
+.homepage-slideshow .slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+.homepage-slideshow .slide.active {
+  opacity: 1;
+  z-index: 2;
+}
+.homepage-slideshow .slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ensures image covers left-to-right */
+  opacity: 0.7; /* 70% so the green background shows through */
+}
+
 @media (max-width: 992px) {
   .event-card-wrapper {
     flex: 0 0 calc(50% - 12px);

@@ -1,6 +1,10 @@
-document.getElementById('create-event').onclick = function () {
-  location.href = '/createEvent';
-};
+// Guard the create-event button in case it's not present for non-admin users
+const createEventBtn = document.getElementById('create-event');
+if (createEventBtn) {
+  createEventBtn.onclick = function () {
+    location.href = '/createEvent';
+  };
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const carousel = document.getElementById('eventsCarousel');
@@ -57,4 +61,46 @@ document.addEventListener('DOMContentLoaded', function () {
 
   window.addEventListener('resize', updateCardsPerView);
   updateCardsPerView();
+  
+  // --- Slideshow: auto-rotate images, no arrows, pause on hover ---
+  function initHomepageSlideshow() {
+    const container = document.getElementById('homepageSlideshow');
+    if (!container) return;
+    const slides = Array.from(container.querySelectorAll('.slide'));
+    if (!slides.length) return;
+
+    let current = 0;
+    const intervalMs = 4000;
+    let intervalId = null;
+
+    function show(index) {
+      index = (index + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      current = index;
+    }
+
+    function next() { show(current + 1); }
+
+    function start() {
+      stop();
+      intervalId = setInterval(next, intervalMs);
+    }
+
+    function stop() {
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    }
+
+    // pause on hover/focus
+    container.addEventListener('mouseenter', stop);
+    container.addEventListener('mouseleave', start);
+    container.addEventListener('focusin', stop);
+    container.addEventListener('focusout', start);
+
+    // initialize
+    slides.forEach(s => s.style.transition = 'opacity 600ms ease');
+    show(0);
+    start();
+  }
+
+  initHomepageSlideshow();
 });
