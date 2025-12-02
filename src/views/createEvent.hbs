@@ -76,90 +76,9 @@
           </div>
         </div>
 
-        <div class='mt-3 row'>
-          <label class='col-sm-2 form-label'>Notify</label>
-          <div class='col-sm-10'>
-            <div class='form-check'>
-              <input class='form-check-input' type='checkbox' id='sendAll' name='sendAll' />
-              <label class='form-check-label' for='sendAll'>Send to all members</label>
-            </div>
-
-            <div id='customMembers' class='mt-2'>
-<!-- Custom (SIM groups) -->
-<label>Custom (SIM groups)</label>
-<div class="member-list">
-  <div class="form-check">
-    <input class="form-check-input sim-checkbox"
-           type="checkbox"
-           name="customMembers"
-           value="Kids"
-           id="sim-Kids" />
-    <label class="form-check-label" for="sim-Kids">Kids</label>
-  </div>
-
-  <div class="form-check">
-    <input class="form-check-input sim-checkbox"
-           type="checkbox"
-           name="customMembers"
-           value="Youth"
-           id="sim-Youth" />
-    <label class="form-check-label" for="sim-Youth">Youth</label>
-  </div>
-
-  <div class="form-check">
-    <input class="form-check-input sim-checkbox"
-           type="checkbox"
-           name="customMembers"
-           value="YoAds"
-           id="sim-YoAds" />
-    <label class="form-check-label" for="sim-YoAds">YoAds</label>
-  </div>
-
-  <div class="form-check">
-    <input class="form-check-input sim-checkbox"
-           type="checkbox"
-           name="customMembers"
-           value="WOW"
-           id="sim-WOW" />
-    <label class="form-check-label" for="sim-WOW">WOW</label>
-  </div>
-
-  <div class="form-check">
-    <input class="form-check-input sim-checkbox"
-           type="checkbox"
-           name="customMembers"
-           value="DIG"
-           id="sim-DIG" />
-    <label class="form-check-label" for="sim-DIG">DIG</label>
-  </div>
-</div>
-
-                <!-- If you still want to show the raw member list for reference uncomment the block below
-                                     but we do NOT submit individual members anymore per your request.
-                                     Keep it commented to avoid changing behavior.
-                                -->
-                {{!--
-                                {{#if members}}
-                                    {{#each members}}
-                                        <div class="form-check">
-                                            <input class="form-check-input member-checkbox" type="checkbox" value="{{this._id}}" id="member-{{@index}}">
-                                            <label class="form-check-label" for="member-{{@index}}">{{this.fullName}}</label>
-                                        </div>
-                                    {{/each}}
-                                {{/if}}
-                                --}}
-
-              </div>
-            </div>
-
-            <!-- hidden input to send selected SIM groups as the original `customMembers` field (server expects customMembers) -->
-            <input type='hidden' id='customMembersInput' name='customMembers' value='[]' />
-          </div>
-        </div>
-
-        <div class='mt-3 row'>
-          <div class='col-sm-12 text-end'>
-            <button id='createEventBtn' class='btn btn-primary' type='submit'>Create Event</button>
+        <div class="mt-3 row">
+          <div class="col-sm-12 d-flex justify-content-end">
+            <button id="createEventBtn" class="btn btn-primary" type="submit">Create Event</button>
           </div>
         </div>
       </form>

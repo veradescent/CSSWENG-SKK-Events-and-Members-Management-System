@@ -34,12 +34,13 @@
     "express": "^5.1.0",
     "express-handlebars": "^8.0.3",
     "hbs": "^4.2.0",
+    "inquirer": "^13.0.1",
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^7.0.0",
     "mongoose": "^8.19.3",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.11"
   },
   "directories": {
     "test": "tests"
